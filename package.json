@@ -16,10 +16,14 @@
     "db:push:local": "pnpm --filter backend db:push:local",
     "db:migrate": "pnpm --filter backend db:migrate",
     "db:migrate:local": "pnpm --filter backend db:migrate:local",
-    "db:studio": "pnpm --filter backend db:studio"
+    "db:studio": "pnpm --filter backend db:studio",
+    "update": "taze --recursive --interactive --include-locked"
   },
   "keywords": [],
-  "author": "",
+  "author": "Pier Dolique (Perdoloque)",
   "license": "Unlicense",
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.28.2",
+  "devDependencies": {
+    "taze": "19.9.2"
+  }
 }

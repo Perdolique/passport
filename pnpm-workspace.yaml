@@ -2,6 +2,9 @@ packages:
   - backend
   - frontend
 
+catalog:
+  vitest: 4.0.18
+
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - better-sqlite3
