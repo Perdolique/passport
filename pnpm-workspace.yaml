@@ -1,0 +1,12 @@
+packages:
+  - backend
+  - frontend
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - better-sqlite3
+  - esbuild
+  - sharp
+  - workerd
+
+saveExact: true

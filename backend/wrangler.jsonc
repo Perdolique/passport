@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "passport",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-31",
+
+  "compatibility_flags": [
+    "nodejs_compat_v2"
+  ],
+
+  // D1 Database binding - ID will be populated on first deploy
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "passport-db"
+  }],
+
+  // Environment variables (non-secret)
+  "vars": {
+    "TWITCH_REDIRECT_URI": "http://localhost:8787/auth/twitch/callback",
+    "FRONTEND_URL": "http://localhost:1487"
+  },
+
+  // Observability
+  "observability": {
+    "enabled": true
+  }
+}

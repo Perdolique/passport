@@ -1,0 +1,3 @@
+INSERT OR IGNORE INTO auth_providers (id, name, type, is_active, config, created_at, updated_at) VALUES ('anonymous', 'Anonymous', 'anonymous', 1, '{"provider":"anonymous"}', unixepoch(), unixepoch());
+--> statement-breakpoint
+INSERT OR IGNORE INTO auth_providers (id, name, type, is_active, config, created_at, updated_at) VALUES ('twitch', 'Twitch', 'oauth', 0, '{"provider":"twitch","authorizationUrl":"https://id.twitch.tv/oauth2/authorize","tokenUrl":"https://id.twitch.tv/oauth2/token","userInfoUrl":"https://api.twitch.tv/helix/users","scopes":"user:read:email","scopesSeparator":" "}', unixepoch(), unixepoch());

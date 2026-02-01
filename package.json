@@ -1,0 +1,25 @@
+{
+  "name": "passport",
+  "version": "0.0.1",
+  "description": "Passport authentication service",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "deploy": "pnpm --filter backend deploy",
+    "test:typecheck": "pnpm -r test:typecheck",
+    "test:unit": "pnpm --filter backend test:unit",
+    "test:unit:ci": "pnpm --filter backend test:unit:ci",
+    "db": "pnpm --filter backend db",
+    "db:generate": "pnpm --filter backend db:generate",
+    "db:push": "pnpm --filter backend db:push",
+    "db:push:local": "pnpm --filter backend db:push:local",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:migrate:local": "pnpm --filter backend db:migrate:local",
+    "db:studio": "pnpm --filter backend db:studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Unlicense",
+  "packageManager": "pnpm@10.28.2"
+}
