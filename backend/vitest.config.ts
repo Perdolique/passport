@@ -8,7 +8,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     testTimeout: 5000,
-    hookTimeout: 10000,
+    hookTimeout: 10_000,
     reporters: ['default'],
     coverage: {
       provider: 'v8',

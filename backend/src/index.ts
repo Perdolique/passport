@@ -28,22 +28,20 @@ app.use(
 );
 
 // Initialize database middleware
-app.use('*', async (c, next) => {
-  const db = createDb(c.env.DB);
+app.use('*', async (context, next) => {
+  const db = createDb(context.env.DB);
 
-  c.set('db', db);
+  context.set('db', db);
 
   await next();
 });
 
 // Health check
-app.get('/', (c) => {
-  return c.json({
+app.get('/', (context) => context.json({
     name: 'passport',
     version: '0.0.1',
     status: 'ok',
-  });
-});
+  }));
 
 // Mount auth routes
 app.route('/auth', auth);
@@ -55,15 +53,13 @@ app.route('/oauth', oauth);
 app.route('/admin', admin);
 
 // 404 handler
-app.notFound((c) => {
-  return c.json({ error: 'Not found' }, 404);
-});
+app.notFound((context) => context.json({ error: 'Not found' }, 404));
 
 // Error handler
-app.onError((err, c) => {
+app.onError((err, context) => {
   console.error('Unhandled error:', err);
 
-  return c.json({ error: 'Internal server error' }, 500);
+  return context.json({ error: 'Internal server error' }, 500);
 });
 
 export default app;

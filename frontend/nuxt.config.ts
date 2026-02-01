@@ -32,7 +32,7 @@ export default defineNuxtConfig({
     head: {
       title: 'Passport — Authentication',
       meta: [
-        { charset: 'utf-8' },
+        { charset: 'utf8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'color-scheme', content: 'light dark' },
       ],

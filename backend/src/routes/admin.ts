@@ -14,8 +14,8 @@ admin.use('*', requireAdmin());
  * GET /admin/auth-providers
  * Get list of all authentication providers with their status
  */
-admin.get('/auth-providers', async (c) => {
-  const db = c.get('db');
+admin.get('/auth-providers', async (context) => {
+  const db = context.get('db');
 
   const providers = await db.query.authProviders.findMany({
     columns: {
@@ -26,27 +26,27 @@ admin.get('/auth-providers', async (c) => {
     },
   });
 
-  return c.json({ providers });
+  return context.json({ providers });
 });
 
 /**
  * PATCH /admin/auth-providers/:id
  * Toggle authentication provider active status
  */
-admin.patch('/auth-providers/:id', async (c) => {
-  const db = c.get('db');
-  const providerId = c.req.param('id') as AuthProviderId;
+admin.patch('/auth-providers/:id', async (context) => {
+  const db = context.get('db');
+  const providerId = context.req.param('id') as AuthProviderId;
 
   // Validate provider ID
   if (!AUTH_PROVIDER_IDS.includes(providerId)) {
-    return c.json({ error: 'Invalid provider ID' }, 400);
+    return context.json({ error: 'Invalid provider ID' }, 400);
   }
 
   // Get request body
-  const body = await c.req.json<{ isActive: boolean }>();
+  const body = await context.req.json<{ isActive: boolean }>();
 
   if (typeof body.isActive !== 'boolean') {
-    return c.json({ error: 'isActive must be a boolean' }, 400);
+    return context.json({ error: 'isActive must be a boolean' }, 400);
   }
 
   // Update provider status
@@ -60,10 +60,10 @@ admin.patch('/auth-providers/:id', async (c) => {
     .returning();
 
   if (result.length === 0) {
-    return c.json({ error: 'Provider not found' }, 404);
+    return context.json({ error: 'Provider not found' }, 404);
   }
 
-  return c.json({
+  return context.json({
     provider: {
       id: result[0].id,
       name: result[0].name,

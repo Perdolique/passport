@@ -19,9 +19,12 @@ export type AuthProviderType = (typeof AUTH_PROVIDER_TYPES)[number];
  * All provider-specific config stored in metadata JSON for flexibility
  */
 export const authProviders = sqliteTable('auth_providers', {
-  id: text('id').primaryKey().$type<AuthProviderId>(), // 'anonymous', 'twitch', etc.
-  name: text('name').notNull(), // Display name: 'Anonymous', 'Twitch', 'Google'
-  type: text('type').notNull().$type<AuthProviderType>(), // 'anonymous' | 'oauth'
+  // 'anonymous', 'twitch', etc.
+  id: text('id').primaryKey().$type<AuthProviderId>(),
+  // Display name: 'Anonymous', 'Twitch', 'Google'
+  name: text('name').notNull(),
+  // 'anonymous' | 'oauth'
+  type: text('type').notNull().$type<AuthProviderType>(),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   // Provider-specific configuration (JSON serialized)
   // Contains OAuth credentials, URLs, and custom settings per provider
@@ -38,7 +41,8 @@ interface BaseOAuthConfig {
   authorizationUrl: string;
   tokenUrl: string;
   scopes?: string;
-  scopesSeparator?: string; // Default: ' ' (space)
+  // Default: ' ' (space)
+  scopesSeparator?: string;
 }
 
 /**
@@ -51,16 +55,16 @@ export type TwitchProviderConfig = BaseOAuthConfig & {
   apiBaseUrl?: string;
 };
 
-export type AnonymousProviderConfig = {
+export interface AnonymousProviderConfig {
   provider: 'anonymous';
   // No configuration needed for anonymous auth
-};
+}
 
 // Add more providers here as needed:
-// export type GoogleProviderConfig = BaseOAuthConfig & {
-//   provider: 'google';
-//   userInfoUrl: string;
-//   discoveryUrl?: string; // OIDC discovery
+// Export type GoogleProviderConfig = BaseOAuthConfig & {
+//   Provider: 'google';
+//   UserInfoUrl: string;
+//   DiscoveryUrl?: string; // OIDC discovery
 // };
 
 export type ProviderConfig = TwitchProviderConfig | AnonymousProviderConfig;
@@ -89,7 +93,8 @@ export const oauthClients = sqliteTable('oauth_clients', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   clientSecretHash: text('client_secret_hash').notNull(),
-  redirectUris: text('redirect_uris').notNull(), // JSON array of allowed redirect URIs
+  // JSON array of allowed redirect URIs
+  redirectUris: text('redirect_uris').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
@@ -112,7 +117,8 @@ export const sessions = sqliteTable('sessions', {
  */
 export const oauthAccounts = sqliteTable('oauth_accounts', {
   id: text('id').primaryKey(),
-  providerId: text('provider_id').notNull().references(() => authProviders.id), // Reference to auth_providers
+  // Reference to auth_providers
+  providerId: text('provider_id').notNull().references(() => authProviders.id),
   providerUserId: text('provider_user_id').notNull(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   accessToken: text('access_token').notNull(),
@@ -134,9 +140,12 @@ export const authorizationCodes = sqliteTable('authorization_codes', {
   clientId: text('client_id').notNull().references(() => oauthClients.id, { onDelete: 'cascade' }),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   redirectUri: text('redirect_uri').notNull(),
-  scope: text('scope'), // Space-separated scopes (optional for now)
-  codeChallenge: text('code_challenge'), // PKCE support
-  codeChallengeMethod: text('code_challenge_method'), // 'S256' or 'plain'
+  // Space-separated scopes (optional for now)
+  scope: text('scope'),
+  // PKCE support
+  codeChallenge: text('code_challenge'),
+  // 'S256' or 'plain'
+  codeChallengeMethod: text('code_challenge_method'),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });

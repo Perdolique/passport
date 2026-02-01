@@ -41,14 +41,14 @@ function createTestApp(mockDb: ReturnType<typeof createMockDb>) {
   const app = new Hono<AppContext>();
 
   // Mock database middleware
-  app.use('*', async (c, next) => {
-    c.set('db', mockDb as never);
+  app.use('*', async (context, next) => {
+    context.set('db', mockDb as never);
     await next();
   });
 
   // Mock environment variables
-  app.use('*', async (c, next) => {
-    c.env = {
+  app.use('*', async (context, next) => {
+    context.env = {
       TWITCH_CLIENT_ID: 'test-client-id',
       TWITCH_CLIENT_SECRET: 'test-client-secret',
       TWITCH_REDIRECT_URI: 'https://example.com/auth/twitch/callback',
@@ -74,7 +74,8 @@ describe('POST /auth/anonymous', () => {
     expect(json).toHaveProperty('userId');
     expect(json).toHaveProperty('isAnonymous', true);
     expect(json).toHaveProperty('expiresAt');
-    expect(mockDb.insert).toHaveBeenCalledTimes(2); // users + sessions
+    // Users + sessions
+    expect(mockDb.insert).toHaveBeenCalledTimes(2);
   });
 
   it('should set session cookie', async () => {
@@ -251,7 +252,8 @@ describe('GET /auth/session', () => {
     mockDb.query.sessions.findFirst = vi.fn().mockResolvedValue({
       id: 'session-1',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() - 1000), // Expired 1 second ago
+      // Expired 1 second ago
+      expiresAt: new Date(Date.now() - 1000),
       user: { isAnonymous: true },
     });
 
@@ -270,7 +272,8 @@ describe('GET /auth/session', () => {
 
   it('should return user info for valid session from cookie', async () => {
     const mockDb = createMockDb();
-    const expiresAt = new Date(Date.now() + 86400000); // 1 day from now
+    // 1 day from now
+    const expiresAt = new Date(Date.now() + 86_400_000);
     mockDb.query.sessions.findFirst = vi.fn().mockResolvedValue({
       id: 'session-1',
       userId: 'user-1',
@@ -299,7 +302,7 @@ describe('GET /auth/session', () => {
 
   it('should return user info for valid session from Authorization header', async () => {
     const mockDb = createMockDb();
-    const expiresAt = new Date(Date.now() + 86400000);
+    const expiresAt = new Date(Date.now() + 86_400_000);
     mockDb.query.sessions.findFirst = vi.fn().mockResolvedValue({
       id: 'session-1',
       userId: 'user-1',

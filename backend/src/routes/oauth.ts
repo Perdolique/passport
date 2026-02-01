@@ -2,7 +2,7 @@ import { Hono, type Context } from 'hono';
 import { eq } from 'drizzle-orm';
 import { getCookie } from 'hono/cookie';
 import type { AppContext } from '../types';
-import { oauthClients, authorizationCodes, accessTokens, refreshTokens } from '../db/schema';
+import { authorizationCodes, accessTokens, refreshTokens, type oauthClients } from '../db/schema';
 import {
   generateId,
   generateRandomString,
@@ -28,11 +28,11 @@ const REFRESH_TOKEN_EXPIRATION_DAYS = 30;
 /**
  * Helper to get current user from session
  */
-async function getCurrentUser(c: Context<AppContext>) {
-  const db = c.get('db');
-  const sessionToken = getCookie(c, SESSION_COOKIE);
+async function getCurrentUser(context: Context<AppContext>) {
+  const db = context.get('db');
+  const sessionToken = getCookie(context, SESSION_COOKIE);
 
-  if (!sessionToken) {
+  if (sessionToken === undefined || sessionToken === null) {
     return null;
   }
 
@@ -94,30 +94,30 @@ async function validateClient(
  * - code_challenge: PKCE challenge (optional but recommended)
  * - code_challenge_method: "S256" or "plain" (required if code_challenge provided)
  */
-oauth.get('/authorize', async (c) => {
-  const db = c.get('db');
+oauth.get('/authorize', async (context) => {
+  const db = context.get('db');
 
   // Parse query parameters
-  const responseType = c.req.query('response_type');
-  const clientId = c.req.query('client_id');
-  const redirectUri = c.req.query('redirect_uri');
-  const state = c.req.query('state');
-  const scope = c.req.query('scope');
-  const codeChallenge = c.req.query('code_challenge');
-  const codeChallengeMethod = c.req.query('code_challenge_method');
+  const responseType = context.req.query('response_type');
+  const clientId = context.req.query('client_id');
+  const redirectUri = context.req.query('redirect_uri');
+  const state = context.req.query('state');
+  const scope = context.req.query('scope');
+  const codeChallenge = context.req.query('code_challenge');
+  const codeChallengeMethod = context.req.query('code_challenge_method');
 
   // Validate required parameters
   if (responseType !== 'code') {
-    return c.json({ error: 'unsupported_response_type' }, 400);
+    return context.json({ error: 'unsupported_response_type' }, 400);
   }
 
-  if (!clientId || !redirectUri) {
-    return c.json({ error: 'invalid_request', description: 'Missing client_id or redirect_uri' }, 400);
+  if (clientId === undefined || clientId === null || clientId === '' || redirectUri === undefined || redirectUri === null || redirectUri === '') {
+    return context.json({ error: 'invalid_request', description: 'Missing client_id or redirect_uri' }, 400);
   }
 
   // Validate PKCE parameters
-  if (codeChallenge && codeChallengeMethod !== 'S256' && codeChallengeMethod !== 'plain') {
-    return c.json({ error: 'invalid_request', description: 'Invalid code_challenge_method' }, 400);
+  if (codeChallenge !== undefined && codeChallenge !== null && codeChallenge !== '' && codeChallengeMethod !== 'S256' && codeChallengeMethod !== 'plain') {
+    return context.json({ error: 'invalid_request', description: 'Invalid code_challenge_method' }, 400);
   }
 
   // Validate client and redirect URI
@@ -125,21 +125,21 @@ oauth.get('/authorize', async (c) => {
 
   if (!validation.valid) {
     // For security, don't redirect on client/redirect_uri errors
-    return c.json({ error: validation.error }, 400);
+    return context.json({ error: validation.error }, 400);
   }
 
   // Check if user is authenticated
-  const user = await getCurrentUser(c);
+  const user = await getCurrentUser(context);
 
   if (!user) {
     // User not authenticated - return login required response
     // The client should redirect user to Passport login page
     // After login, user will be redirected back to /oauth/authorize with same params
-    const loginUrl = new URL('/auth/login', c.req.url);
-    const currentUrl = new URL(c.req.url);
+    const loginUrl = new URL('/auth/login', context.req.url);
+    const currentUrl = new URL(context.req.url);
     loginUrl.searchParams.set('redirect', currentUrl.pathname + currentUrl.search);
 
-    return c.json({
+    return context.json({
       error: 'login_required',
       login_url: loginUrl.toString(),
     }, 401);
@@ -156,9 +156,9 @@ oauth.get('/authorize', async (c) => {
     clientId,
     userId: user.id,
     redirectUri,
-    scope: scope || null,
-    codeChallenge: codeChallenge || null,
-    codeChallengeMethod: codeChallengeMethod || null,
+    scope: scope ?? null,
+    codeChallenge: codeChallenge ?? null,
+    codeChallengeMethod: codeChallengeMethod ?? null,
     expiresAt,
   });
 
@@ -166,11 +166,11 @@ oauth.get('/authorize', async (c) => {
   const redirectUrl = new URL(redirectUri);
   redirectUrl.searchParams.set('code', code);
 
-  if (state) {
+  if (state !== null && state !== undefined && state !== '') {
     redirectUrl.searchParams.set('state', state);
   }
 
-  return c.redirect(redirectUrl.toString());
+  return context.redirect(redirectUrl.toString());
 });
 
 /**
@@ -191,17 +191,17 @@ oauth.get('/authorize', async (c) => {
  * - client_id: client identifier
  * - client_secret: client secret
  */
-oauth.post('/token', async (c) => {
-  const db = c.get('db');
+oauth.post('/token', async (context) => {
+  const db = context.get('db');
 
   // Parse body (support both JSON and form-urlencoded)
   let body: Record<string, string>;
-  const contentType = c.req.header('Content-Type') || '';
+  const contentType = context.req.header('Content-Type') ?? '';
 
   if (contentType.includes('application/json')) {
-    body = await c.req.json();
+    body = await context.req.json();
   } else {
-    const formData = await c.req.parseBody();
+    const formData = await context.req.parseBody();
     body = Object.fromEntries(
       Object.entries(formData).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
     );
@@ -211,12 +211,12 @@ oauth.post('/token', async (c) => {
 
   // Validate grant type
   if (grant_type !== 'authorization_code' && grant_type !== 'refresh_token') {
-    return c.json({ error: 'unsupported_grant_type' }, 400);
+    return context.json({ error: 'unsupported_grant_type' }, 400);
   }
 
   // Validate client credentials (required for both grant types)
   if (!client_id || !client_secret) {
-    return c.json({ error: 'invalid_request', description: 'Missing client credentials' }, 400);
+    return context.json({ error: 'invalid_request', description: 'Missing client credentials' }, 400);
   }
 
   // Validate client credentials
@@ -225,20 +225,20 @@ oauth.post('/token', async (c) => {
   });
 
   if (!client) {
-    return c.json({ error: 'invalid_client' }, 401);
+    return context.json({ error: 'invalid_client' }, 401);
   }
 
   // Verify client secret
   const secretHash = await hashString(client_secret);
 
   if (secretHash !== client.clientSecretHash) {
-    return c.json({ error: 'invalid_client' }, 401);
+    return context.json({ error: 'invalid_client' }, 401);
   }
 
   // Handle refresh_token grant type
   if (grant_type === 'refresh_token') {
     if (!refresh_token) {
-      return c.json({ error: 'invalid_request', description: 'Missing refresh_token' }, 400);
+      return context.json({ error: 'invalid_request', description: 'Missing refresh_token' }, 400);
     }
 
     const tokenHash = await hashString(refresh_token);
@@ -248,18 +248,18 @@ oauth.post('/token', async (c) => {
     });
 
     if (!storedToken) {
-      return c.json({ error: 'invalid_grant', description: 'Invalid refresh token' }, 400);
+      return context.json({ error: 'invalid_grant', description: 'Invalid refresh token' }, 400);
     }
 
     // Verify token belongs to this client
     if (storedToken.clientId !== client_id) {
-      return c.json({ error: 'invalid_grant' }, 400);
+      return context.json({ error: 'invalid_grant' }, 400);
     }
 
     // Check expiration
     if (storedToken.expiresAt < new Date()) {
       await db.delete(refreshTokens).where(eq(refreshTokens.id, storedToken.id));
-      return c.json({ error: 'invalid_grant', description: 'Refresh token expired' }, 400);
+      return context.json({ error: 'invalid_grant', description: 'Refresh token expired' }, 400);
     }
 
     // Generate new access token
@@ -276,17 +276,17 @@ oauth.post('/token', async (c) => {
       expiresAt: accessExpiresAt,
     });
 
-    return c.json({
+    return context.json({
       access_token: newAccessToken,
       token_type: 'Bearer',
       expires_in: ACCESS_TOKEN_EXPIRATION_HOURS * 60 * 60,
-      scope: storedToken.scope || '',
+      scope: storedToken.scope ?? '',
     });
   }
 
   // Handle authorization_code grant type
   if (!code || !redirect_uri) {
-    return c.json({ error: 'invalid_request', description: 'Missing code or redirect_uri' }, 400);
+    return context.json({ error: 'invalid_request', description: 'Missing code or redirect_uri' }, 400);
   }
 
   // Find and validate authorization code
@@ -298,35 +298,35 @@ oauth.post('/token', async (c) => {
   });
 
   if (!authCode) {
-    return c.json({ error: 'invalid_grant', description: 'Invalid authorization code' }, 400);
+    return context.json({ error: 'invalid_grant', description: 'Invalid authorization code' }, 400);
   }
 
   // Verify code belongs to this client and redirect_uri matches
   if (authCode.clientId !== client_id || authCode.redirectUri !== redirect_uri) {
-    return c.json({ error: 'invalid_grant' }, 400);
+    return context.json({ error: 'invalid_grant' }, 400);
   }
 
   // Check expiration
   if (authCode.expiresAt < new Date()) {
     // Delete expired code
     await db.delete(authorizationCodes).where(eq(authorizationCodes.id, authCode.id));
-    return c.json({ error: 'invalid_grant', description: 'Authorization code expired' }, 400);
+    return context.json({ error: 'invalid_grant', description: 'Authorization code expired' }, 400);
   }
 
   // Verify PKCE if code_challenge was provided during authorization
-  if (authCode.codeChallenge) {
-    if (!code_verifier) {
-      return c.json({ error: 'invalid_grant', description: 'code_verifier required' }, 400);
+  if (authCode.codeChallenge !== null && authCode.codeChallenge !== undefined && authCode.codeChallenge !== '') {
+    if (code_verifier === undefined || code_verifier === null || code_verifier === '') {
+      return context.json({ error: 'invalid_grant', description: 'code_verifier required' }, 400);
     }
 
     const isValid = await verifyCodeChallenge(
       code_verifier,
       authCode.codeChallenge,
-      authCode.codeChallengeMethod || 'plain'
+      authCode.codeChallengeMethod ?? 'plain'
     );
 
     if (!isValid) {
-      return c.json({ error: 'invalid_grant', description: 'Invalid code_verifier' }, 400);
+      return context.json({ error: 'invalid_grant', description: 'Invalid code_verifier' }, 400);
     }
   }
 
@@ -361,12 +361,12 @@ oauth.post('/token', async (c) => {
     expiresAt: refreshExpiresAt,
   });
 
-  return c.json({
+  return context.json({
     access_token: accessToken,
     token_type: 'Bearer',
     expires_in: ACCESS_TOKEN_EXPIRATION_HOURS * 60 * 60,
     refresh_token: refreshToken,
-    scope: authCode.scope || '',
+    scope: authCode.scope ?? '',
   });
 });
 
@@ -376,14 +376,14 @@ oauth.post('/token', async (c) => {
  *
  * Requires Bearer token in Authorization header
  */
-oauth.get('/userinfo', async (c) => {
-  const db = c.get('db');
+oauth.get('/userinfo', async (context) => {
+  const db = context.get('db');
 
   // Get access token from Authorization header
-  const authHeader = c.req.header('Authorization');
+  const authHeader = context.req.header('Authorization');
 
-  if (!authHeader?.startsWith('Bearer ')) {
-    return c.json({ error: 'invalid_token' }, 401);
+  if (authHeader === undefined || !authHeader.startsWith('Bearer ')) {
+    return context.json({ error: 'invalid_token' }, 401);
   }
 
   const accessToken = authHeader.slice(7);
@@ -396,23 +396,23 @@ oauth.get('/userinfo', async (c) => {
   });
 
   if (!token) {
-    return c.json({ error: 'invalid_token' }, 401);
+    return context.json({ error: 'invalid_token' }, 401);
   }
 
   // Check expiration
   if (token.expiresAt < new Date()) {
     await db.delete(accessTokens).where(eq(accessTokens.id, token.id));
-    return c.json({ error: 'invalid_token', description: 'Token expired' }, 401);
+    return context.json({ error: 'invalid_token', description: 'Token expired' }, 401);
   }
 
-  const user = token.user;
+  const {user} = token;
 
   if (!user) {
-    return c.json({ error: 'invalid_token' }, 401);
+    return context.json({ error: 'invalid_token' }, 401);
   }
 
   // Return user info
-  return c.json({
+  return context.json({
     sub: user.id,
     is_anonymous: user.isAnonymous,
     created_at: user.createdAt.toISOString(),
@@ -423,16 +423,16 @@ oauth.get('/userinfo', async (c) => {
  * POST /oauth/revoke
  * Revoke an access token
  */
-oauth.post('/revoke', async (c) => {
-  const db = c.get('db');
+oauth.post('/revoke', async (context) => {
+  const db = context.get('db');
 
   let body: Record<string, string>;
-  const contentType = c.req.header('Content-Type') || '';
+  const contentType = context.req.header('Content-Type') ?? '';
 
   if (contentType.includes('application/json')) {
-    body = await c.req.json();
+    body = await context.req.json();
   } else {
-    const formData = await c.req.parseBody();
+    const formData = await context.req.parseBody();
     body = Object.fromEntries(
       Object.entries(formData).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
     );
@@ -442,13 +442,13 @@ oauth.post('/revoke', async (c) => {
 
   if (!token) {
     // Per RFC 7009, return 200 even if token is missing
-    return c.json({ success: true });
+    return context.json({ success: true });
   }
 
   const tokenHash = await hashString(token);
   await db.delete(accessTokens).where(eq(accessTokens.tokenHash, tokenHash));
 
-  return c.json({ success: true });
+  return context.json({ success: true });
 });
 
 export { oauth };

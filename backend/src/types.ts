@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Database } from './db/client';
+import type { UserRole } from './db/schema';
 
 // Re-export provider types for convenient access
 export type {
@@ -23,8 +24,6 @@ interface Env {
   SESSION_SECRET: string;
   FRONTEND_URL?: string;
 }
-
-import type { UserRole } from './db/schema';
 
 export interface AppContext {
   Bindings: Env;

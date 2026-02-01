@@ -41,12 +41,12 @@ async function isProviderActive(db: Database, providerId: AuthProviderId): Promi
  * POST /auth/anonymous
  * Create an anonymous user account and session
  */
-auth.post('/anonymous', async (c) => {
-  const db = c.get('db');
+auth.post('/anonymous', async (context) => {
+  const db = context.get('db');
 
   // Check if anonymous auth is enabled
   if (!(await isProviderActive(db, 'anonymous'))) {
-    return c.json({ error: 'Anonymous authentication is disabled' }, 403);
+    return context.json({ error: 'Anonymous authentication is disabled' }, 403);
   }
 
   // Create anonymous user
@@ -71,7 +71,7 @@ auth.post('/anonymous', async (c) => {
   });
 
   // Set session cookie
-  setCookie(c, SESSION_COOKIE, sessionToken, {
+  setCookie(context, SESSION_COOKIE, sessionToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'Lax',
@@ -79,7 +79,7 @@ auth.post('/anonymous', async (c) => {
     maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
   });
 
-  return c.json({
+  return context.json({
     userId,
     isAnonymous: true,
     expiresAt: expiresAt.toISOString(),
@@ -93,17 +93,17 @@ auth.post('/anonymous', async (c) => {
  * Query params:
  * - link: if "true", will link Twitch to existing authenticated account instead of creating new
  */
-auth.get('/twitch', async (c) => {
-  const db = c.get('db');
-  const { TWITCH_CLIENT_ID, TWITCH_REDIRECT_URI } = c.env;
+auth.get('/twitch', async (context) => {
+  const db = context.get('db');
+  const { TWITCH_CLIENT_ID, TWITCH_REDIRECT_URI } = context.env;
 
   // Check if Twitch provider is enabled
   if (!(await isProviderActive(db, 'twitch'))) {
-    return c.json({ error: 'Twitch authentication is disabled' }, 403);
+    return context.json({ error: 'Twitch authentication is disabled' }, 403);
   }
 
-  const linkMode = c.req.query('link') === 'true';
-  const redirectParam = c.req.query('redirect');
+  const linkMode = context.req.query('link') === 'true';
+  const redirectParam = context.req.query('redirect');
 
   // Generate PKCE values
   const state = generateRandomString(32);
@@ -111,41 +111,45 @@ auth.get('/twitch', async (c) => {
   const codeChallenge = await generateCodeChallenge(codeVerifier);
 
   // Store state and verifier in cookies (httpOnly for security)
-  setCookie(c, STATE_COOKIE, state, {
+  setCookie(context, STATE_COOKIE, state, {
     httpOnly: true,
     secure: true,
     sameSite: 'Lax',
     path: '/',
-    maxAge: 600, // 10 minutes
+    // 10 minutes
+    maxAge: 600,
   });
 
-  setCookie(c, VERIFIER_COOKIE, codeVerifier, {
+  setCookie(context, VERIFIER_COOKIE, codeVerifier, {
     httpOnly: true,
     secure: true,
     sameSite: 'Lax',
     path: '/',
-    maxAge: 600, // 10 minutes
+    // 10 minutes
+    maxAge: 600,
   });
 
   // Store link mode in cookie if enabled
   if (linkMode) {
-    setCookie(c, 'oauth_link_mode', 'true', {
+    setCookie(context, 'oauth_link_mode', 'true', {
       httpOnly: true,
       secure: true,
       sameSite: 'Lax',
       path: '/',
-      maxAge: 600, // 10 minutes
+      // 10 minutes
+      maxAge: 600,
     });
   }
 
   // Store redirect parameter in cookie if provided
-  if (redirectParam) {
-    setCookie(c, 'oauth_redirect', redirectParam, {
+  if (redirectParam !== undefined && redirectParam !== null && redirectParam !== '') {
+    setCookie(context, 'oauth_redirect', redirectParam, {
       httpOnly: true,
       secure: true,
       sameSite: 'Lax',
       path: '/',
-      maxAge: 600, // 10 minutes
+      // 10 minutes
+      maxAge: 600,
     });
   }
 
@@ -157,7 +161,7 @@ auth.get('/twitch', async (c) => {
     codeChallenge,
   });
 
-  return c.redirect(authUrl);
+  return context.redirect(authUrl);
 });
 
 /**
@@ -168,52 +172,52 @@ auth.get('/twitch', async (c) => {
  * 1. Login/Register: Creates new user or logs in existing (default)
  * 2. Link: Links Twitch to currently authenticated user (when oauth_link_mode cookie is set)
  */
-auth.get('/twitch/callback', async (c) => {
-  const { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI } = c.env;
-  const db = c.get('db');
+auth.get('/twitch/callback', async (context) => {
+  const { TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI } = context.env;
+  const db = context.get('db');
 
   // Get query parameters
-  const code = c.req.query('code');
-  const state = c.req.query('state');
-  const error = c.req.query('error');
+  const code = context.req.query('code');
+  const state = context.req.query('state');
+  const error = context.req.query('error');
 
   // Handle OAuth errors
-  if (error) {
-    const errorDescription = c.req.query('error_description') || 'Unknown error';
-    return c.json({ error, description: errorDescription }, 400);
+  if (error !== undefined && error !== null && error !== '') {
+    const errorDescription = context.req.query('error_description') ?? 'Unknown error';
+    return context.json({ error, description: errorDescription }, 400);
   }
 
-  if (!code || !state) {
-    return c.json({ error: 'Missing code or state parameter' }, 400);
+  if (code === undefined || code === null || code === '' || state === undefined || state === null || state === '') {
+    return context.json({ error: 'Missing code or state parameter' }, 400);
   }
 
   // Verify state
-  const storedState = getCookie(c, STATE_COOKIE);
-  const codeVerifier = getCookie(c, VERIFIER_COOKIE);
-  const linkMode = getCookie(c, 'oauth_link_mode') === 'true';
-  const redirectParam = getCookie(c, 'oauth_redirect');
+  const storedState = getCookie(context, STATE_COOKIE);
+  const codeVerifier = getCookie(context, VERIFIER_COOKIE);
+  const linkMode = getCookie(context, 'oauth_link_mode') === 'true';
+  const redirectParam = getCookie(context, 'oauth_redirect');
 
-  if (!storedState || storedState !== state) {
-    return c.json({ error: 'Invalid state parameter' }, 400);
+  if (storedState === undefined || storedState === null || storedState !== state) {
+    return context.json({ error: 'Invalid state parameter' }, 400);
   }
 
-  if (!codeVerifier) {
-    return c.json({ error: 'Missing code verifier' }, 400);
+  if (codeVerifier === undefined || codeVerifier === null) {
+    return context.json({ error: 'Missing code verifier' }, 400);
   }
 
   // Clean up OAuth cookies
-  deleteCookie(c, STATE_COOKIE);
-  deleteCookie(c, VERIFIER_COOKIE);
-  deleteCookie(c, 'oauth_link_mode');
-  deleteCookie(c, 'oauth_redirect');
+  deleteCookie(context, STATE_COOKIE);
+  deleteCookie(context, VERIFIER_COOKIE);
+  deleteCookie(context, 'oauth_link_mode');
+  deleteCookie(context, 'oauth_redirect');
 
   // If in link mode, verify user is authenticated
   let currentUserId: string | null = null;
 
   if (linkMode) {
-    const sessionToken = getCookie(c, SESSION_COOKIE);
+    const sessionToken = getCookie(context, SESSION_COOKIE);
 
-    if (sessionToken) {
+    if (sessionToken !== undefined && sessionToken !== null) {
       const tokenHash = await hashString(sessionToken);
 
       const session = await db.query.sessions.findFirst({
@@ -225,8 +229,8 @@ auth.get('/twitch/callback', async (c) => {
       }
     }
 
-    if (!currentUserId) {
-      return c.json({ error: 'Authentication required for linking' }, 401);
+    if (currentUserId === null) {
+      return context.json({ error: 'Authentication required for linking' }, 401);
     }
   }
 
@@ -256,7 +260,7 @@ auth.get('/twitch/callback', async (c) => {
 
     let userId: string;
 
-    if (linkMode && currentUserId) {
+    if (linkMode && currentUserId !== null) {
       // Link mode: attach Twitch to existing user
       if (existingAccount) {
         if (existingAccount.userId === currentUserId) {
@@ -272,7 +276,7 @@ auth.get('/twitch/callback', async (c) => {
             .where(eq(oauthAccounts.id, existingAccount.id));
         } else {
           // Linked to different user
-          return c.json({ error: 'This Twitch account is already linked to another user' }, 409);
+          return context.json({ error: 'This Twitch account is already linked to another user' }, 409);
         }
       } else {
         // Link Twitch to current user
@@ -296,7 +300,7 @@ auth.get('/twitch/callback', async (c) => {
       userId = currentUserId;
     } else if (existingAccount) {
       // Login mode: existing Twitch account found
-      userId = existingAccount.userId;
+      ({ userId } = existingAccount);
 
       await db
         .update(oauthAccounts)
@@ -342,7 +346,7 @@ auth.get('/twitch/callback', async (c) => {
       });
 
       // Set session cookie
-      setCookie(c, SESSION_COOKIE, sessionToken, {
+      setCookie(context, SESSION_COOKIE, sessionToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'Lax',
@@ -352,18 +356,18 @@ auth.get('/twitch/callback', async (c) => {
     }
 
     // Redirect to frontend callback page
-    const frontendUrl = c.env.FRONTEND_URL || 'http://localhost:1487';
+    const frontendUrl = context.env.FRONTEND_URL ?? 'http://localhost:1487';
     const callbackUrl = new URL('/auth/callback', frontendUrl);
 
     // Add redirect parameter if it was provided
-    if (redirectParam) {
+    if (redirectParam !== undefined && redirectParam !== null && redirectParam !== '') {
       callbackUrl.searchParams.set('redirect', redirectParam);
     }
 
-    return c.redirect(callbackUrl.toString());
-  } catch (err) {
-    console.error('Twitch OAuth error:', err);
-    return c.json({ error: 'Authentication failed' }, 500);
+    return context.redirect(callbackUrl.toString());
+  } catch (error) {
+    console.error('Twitch OAuth error:', error);
+    return context.json({ error: 'Authentication failed' }, 500);
   }
 });
 
@@ -371,21 +375,22 @@ auth.get('/twitch/callback', async (c) => {
  * GET /auth/session
  * Validate current session and return user info
  */
-auth.get('/session', async (c) => {
-  const db = c.get('db');
+auth.get('/session', async (context) => {
+  const db = context.get('db');
 
   // Get session token from cookie or Authorization header
-  let sessionToken = getCookie(c, SESSION_COOKIE);
+  let sessionToken = getCookie(context, SESSION_COOKIE);
 
-  if (!sessionToken) {
-    const authHeader = c.req.header('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
+  if (sessionToken === undefined || sessionToken === null) {
+    const authHeader = context.req.header('Authorization');
+    const isBearer = authHeader?.startsWith('Bearer ');
+    if (isBearer === true && authHeader !== undefined) {
       sessionToken = authHeader.slice(7);
     }
   }
 
-  if (!sessionToken) {
-    return c.json({ error: 'No session token provided' }, 401);
+  if (sessionToken === undefined || sessionToken === null) {
+    return context.json({ error: 'No session token provided' }, 401);
   }
 
   // Hash the token and look up session
@@ -409,29 +414,29 @@ auth.get('/session', async (c) => {
   });
 
   if (!session) {
-    return c.json({ error: 'Invalid session' }, 401);
+    return context.json({ error: 'Invalid session' }, 401);
   }
 
   // Check if session is expired
   if (session.expiresAt < new Date()) {
     // Delete expired session
     await db.delete(sessions).where(eq(sessions.id, session.id));
-    return c.json({ error: 'Session expired' }, 401);
+    return context.json({ error: 'Session expired' }, 401);
   }
 
   if (!session.user) {
-    return c.json({ error: 'User not found' }, 401);
+    return context.json({ error: 'User not found' }, 401);
   }
 
   // Get Twitch account if linked
   const twitchAccount = session.user?.oauthAccounts?.[0];
   let twitchUser = null;
 
-  if (twitchAccount) {
+  if (twitchAccount !== undefined && twitchAccount !== null) {
     try {
       const twitchUserData = await getTwitchUser({
         accessToken: twitchAccount.accessToken,
-        clientId: c.env.TWITCH_CLIENT_ID,
+        clientId: context.env.TWITCH_CLIENT_ID,
       });
 
       twitchUser = {
@@ -440,13 +445,13 @@ auth.get('/session', async (c) => {
         displayName: twitchUserData.display_name,
         profileImageUrl: twitchUserData.profile_image_url,
       };
-    } catch (err) {
-      console.error('Failed to fetch Twitch user:', err);
+    } catch (error) {
+      console.error('Failed to fetch Twitch user:', error);
       // Continue without Twitch user data
     }
   }
 
-  return c.json({
+  return context.json({
     id: session.userId,
     role: session.user.role,
     twitchUser,
@@ -457,20 +462,20 @@ auth.get('/session', async (c) => {
  * POST /auth/logout
  * Invalidate current session
  */
-auth.post('/logout', async (c) => {
-  const db = c.get('db');
+auth.post('/logout', async (context) => {
+  const db = context.get('db');
 
-  const sessionToken = getCookie(c, SESSION_COOKIE);
+  const sessionToken = getCookie(context, SESSION_COOKIE);
 
-  if (sessionToken) {
+  if (sessionToken !== undefined && sessionToken !== null) {
     const tokenHash = await hashString(sessionToken);
     await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
   }
 
   // Clear session cookie
-  deleteCookie(c, SESSION_COOKIE);
+  deleteCookie(context, SESSION_COOKIE);
 
-  return c.json({ success: true });
+  return context.json({ success: true });
 });
 
 export { auth };

@@ -8,7 +8,7 @@ import type { H3Event } from 'h3'
 export default defineEventHandler(async (event: H3Event) => {
   const config = useRuntimeConfig(event)
   const path = getRouterParam(event, '_')
-  const method = event.method
+  const {method} = event
   const query = getQuery(event)
 
   // Build target URL
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event: H3Event) => {
   // Forward query params
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined) {
-      targetUrl.searchParams.set(key, String(value))
+      targetUrl.searchParams.set(key, typeof value === 'string' ? value : JSON.stringify(value))
     }
   }
 
@@ -25,12 +25,12 @@ export default defineEventHandler(async (event: H3Event) => {
   const headers: HeadersInit = {}
 
   const cookie = getHeader(event, 'cookie')
-  if (cookie) {
+  if (cookie !== null && cookie !== undefined && cookie !== '') {
     headers['cookie'] = cookie
   }
 
   const contentType = getHeader(event, 'content-type')
-  if (contentType) {
+  if (contentType !== null && contentType !== undefined && contentType !== '') {
     headers['content-type'] = contentType
   }
 
@@ -45,7 +45,8 @@ export default defineEventHandler(async (event: H3Event) => {
     method,
     headers,
     body,
-    redirect: 'manual', // Handle redirects manually
+    // Handle redirects manually
+    redirect: 'manual',
   })
 
   // Forward Set-Cookie headers
@@ -59,7 +60,7 @@ export default defineEventHandler(async (event: H3Event) => {
   // Handle redirects
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get('location')
-    if (location) {
+    if (location !== null && location !== '') {
       // If redirecting to external OAuth provider, forward the redirect
       if (location.startsWith('http')) {
         return sendRedirect(event, location, response.status)
@@ -75,7 +76,8 @@ export default defineEventHandler(async (event: H3Event) => {
 
   // Forward response body
   const contentTypeResponse = response.headers.get('content-type')
-  if (contentTypeResponse?.includes('application/json')) {
+  const isJson = contentTypeResponse?.includes('application/json')
+  if (isJson === true) {
     return response.json()
   }
 

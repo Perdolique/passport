@@ -4,26 +4,31 @@
   "description": "Passport authentication service",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter backend dev",
-    "dev:frontend": "pnpm --filter frontend dev",
-    "deploy": "pnpm --filter backend deploy",
-    "test:typecheck": "pnpm -r test:typecheck",
-    "test:unit": "pnpm --filter backend test:unit",
-    "test:unit:ci": "pnpm --filter backend test:unit:ci",
-    "db": "pnpm --filter backend db",
     "db:generate": "pnpm --filter backend db:generate",
-    "db:push": "pnpm --filter backend db:push",
-    "db:push:local": "pnpm --filter backend db:push:local",
-    "db:migrate": "pnpm --filter backend db:migrate",
     "db:migrate:local": "pnpm --filter backend db:migrate:local",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:push:local": "pnpm --filter backend db:push:local",
+    "db:push": "pnpm --filter backend db:push",
     "db:studio": "pnpm --filter backend db:studio",
-    "update": "taze --recursive --interactive --include-locked"
+    "db:studio:local": "pnpm --filter backend db:studio:local",
+    "db": "pnpm --filter backend db",
+    "deploy": "pnpm --filter backend deploy",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev": "pnpm --filter backend dev",
+    "lint": "oxlint --quiet --type-aware --report-unused-disable-directives-severity error",
+    "test:typecheck": "pnpm -r test:typecheck",
+    "test:unit:ci": "pnpm --filter backend test:unit:ci",
+    "test:unit": "pnpm --filter backend test:unit",
+    "update:all": "taze --recursive --interactive --include-locked"
   },
   "keywords": [],
   "author": "Pier Dolique (Perdoloque)",
   "license": "Unlicense",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
+    "eslint-config-greenpie": "15.0.1-17",
+    "oxlint": "1.42.0",
+    "oxlint-tsgolint": "0.11.4",
     "taze": "19.9.2"
   }
 }

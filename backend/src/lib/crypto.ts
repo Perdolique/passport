@@ -21,8 +21,8 @@ export async function hashString(input: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  const hashArray = [...new Uint8Array(hashBuffer)];
+  return hashArray.map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 /**
@@ -48,8 +48,8 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
  * Base64 URL-safe encoding (no padding)
  */
 function base64UrlEncode(buffer: Uint8Array): string {
-  const base64 = btoa(String.fromCharCode(...buffer));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const base64 = btoa(String.fromCodePoint(...buffer));
+  return base64.replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }
 
 /**

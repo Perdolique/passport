@@ -25,33 +25,25 @@ function createTestApp() {
   );
 
   // Health check
-  app.get('/', (c) => {
-    return c.json({
+  app.get('/', (context) => context.json({
       name: 'passport',
       version: '0.0.1',
       status: 'ok',
-    });
-  });
+    }));
 
   // Mock auth route for testing route structure
-  app.get('/auth/session', (c) => {
-    return c.json({ error: 'No session token provided' }, 401);
-  });
+  app.get('/auth/session', (context) => context.json({ error: 'No session token provided' }, 401));
 
   // Mock oauth route for testing route structure
-  app.get('/oauth/authorize', (c) => {
-    return c.json({ error: 'unsupported_response_type' }, 400);
-  });
+  app.get('/oauth/authorize', (context) => context.json({ error: 'unsupported_response_type' }, 400));
 
   // 404 handler
-  app.notFound((c) => {
-    return c.json({ error: 'Not found' }, 404);
-  });
+  app.notFound((context) => context.json({ error: 'Not found' }, 404));
 
   // Error handler
-  app.onError((err, c) => {
+  app.onError((err, context) => {
     console.error('Unhandled error:', err);
-    return c.json({ error: 'Internal server error' }, 500);
+    return context.json({ error: 'Internal server error' }, 500);
   });
 
   return app;

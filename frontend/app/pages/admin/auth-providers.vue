@@ -34,8 +34,8 @@ async function fetchProviders() {
 
     providers.value = data.providers
   }
-  catch (err: any) {
-    error.value = err.data?.error || 'Failed to load providers'
+  catch (error: any) {
+    error.value = error.data?.error || 'Failed to load providers'
   }
   finally {
     loading.value = false
@@ -63,10 +63,10 @@ async function toggleProvider(provider: AuthProvider) {
     // Update local state
     provider.isActive = data.provider.isActive
   }
-  catch (err: any) {
+  catch (error: any) {
     // Revert on error
     provider.isActive = previousState
-    error.value = err.data?.error || 'Failed to update provider'
+    error.value = error.data?.error || 'Failed to update provider'
   }
 }
 

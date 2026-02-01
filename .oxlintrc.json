@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "extends": [
+    "./node_modules/eslint-config-greenpie/configs/oxlintrc.jsonc"
+  ],
+
+  "rules": {
+    "no-unsafe-type-assertion": "off",
+    "no-unsafe-return": "off",
+    "no-unsafe-member-access": "off",
+    "no-unsafe-argument": "off",
+    "no-unsafe-assignment": "off",
+    "no-useless-undefined": "off",
+    "no-undef": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "no-console": "off",
+    "no-default-export": "off",
+    "init-declarations": "off",
+    "complexity": "off",
+    "max-lines": "off",
+    "unicorn/filename-case": "off",
+    "prefer-global-this": "off",
+    "group-exports": "off",
+    "exports-last": "off",
+    "no-namespace": "off",
+    "no-explicit-any": "off",
+    "import/no-unassigned-import": "off"
+  },
+
+  "overrides": [
+    {
+      // Test files configuration
+      "files": ["**/__tests__/**/*.test.ts"],
+
+      "rules": {
+        "eslint/max-lines": "off"
+      }
+    },
+
+    {
+      // Vue files configuration
+      "files": ["**/*.vue"],
+
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    }
+  ]
+}

@@ -8,16 +8,16 @@ let dbPath: string;
 
 try {
   const files = readdirSync(dbDir);
-  const dbFile = files.find(f => f.endsWith('.sqlite'));
+  const dbFile = files.find(file => file.endsWith('.sqlite'));
 
-  if (!dbFile) {
+  if (dbFile === undefined) {
     throw new Error('No .sqlite file found');
   }
 
   dbPath = join(dbDir, dbFile);
-} catch (error) {
+} catch {
   throw new Error(
-    'Local D1 database not found. Please run "pnpm dev" first to create the local database.'
+    'Local D1 database not found. Please run "pnpm dev" first to create the local database.', { cause: error }
   );
 }
 

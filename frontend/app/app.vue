@@ -10,9 +10,7 @@ onMounted(() => {
 })
 
 // Don't show header on login page or auth callback page
-const showHeader = computed(() => {
-  return route.path !== '/login' && !route.path.startsWith('/auth/')
-})
+const showHeader = computed(() => route.path !== '/login' && !route.path.startsWith('/auth/'))
 
 async function handleLogout() {
   await logout()
