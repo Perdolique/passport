@@ -27,15 +27,15 @@ function createMockDb(overrides: Record<string, unknown> = {}) {
       },
     },
     insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
+      values: vi.fn().mockResolvedValue(null),
     }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockResolvedValue(null),
       }),
     }),
     delete: vi.fn().mockReturnValue({
-      where: vi.fn().mockResolvedValue(undefined),
+      where: vi.fn().mockResolvedValue(null),
     }),
     ...overrides,
   };

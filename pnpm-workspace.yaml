@@ -3,6 +3,7 @@ packages:
   - frontend
 
 catalog:
+  valibot: 1.2.0
   vitest: 4.0.18
 
 onlyBuiltDependencies:

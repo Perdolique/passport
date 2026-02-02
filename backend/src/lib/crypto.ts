@@ -1,7 +1,7 @@
 /**
  * Generate a cryptographically secure random string
  */
-export function generateRandomString(length: number): string {
+function generateRandomString(length: number): string {
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
   return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -10,14 +10,14 @@ export function generateRandomString(length: number): string {
 /**
  * Generate a random UUID v4
  */
-export function generateId(): string {
+function generateId(): string {
   return crypto.randomUUID();
 }
 
 /**
  * Hash a string using SHA-256
  */
-export async function hashString(input: string): Promise<string> {
+async function hashString(input: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -28,7 +28,7 @@ export async function hashString(input: string): Promise<string> {
 /**
  * Generate a PKCE code verifier (43-128 characters)
  */
-export function generateCodeVerifier(): string {
+function generateCodeVerifier(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   return base64UrlEncode(array);
@@ -37,7 +37,7 @@ export function generateCodeVerifier(): string {
 /**
  * Generate a PKCE code challenge from a verifier using S256 method
  */
-export async function generateCodeChallenge(verifier: string): Promise<string> {
+async function generateCodeChallenge(verifier: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -55,7 +55,7 @@ function base64UrlEncode(buffer: Uint8Array): string {
 /**
  * Verify PKCE code challenge against code verifier
  */
-export async function verifyCodeChallenge(
+async function verifyCodeChallenge(
   verifier: string,
   challenge: string,
   method: string
@@ -75,8 +75,10 @@ export async function verifyCodeChallenge(
 /**
  * Create an expiration date from now
  */
-export function createExpirationDate(days: number): Date {
+function createExpirationDate(days: number): Date {
   const date = new Date();
   date.setDate(date.getDate() + days);
   return date;
 }
+
+export { generateRandomString, generateId, hashString, generateCodeVerifier, generateCodeChallenge, verifyCodeChallenge, createExpirationDate };

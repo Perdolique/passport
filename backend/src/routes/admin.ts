@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import type { AppContext, AuthProviderId } from '../types';
-import { authProviders, AUTH_PROVIDER_IDS } from '../db/schema';
+import * as v from 'valibot';
+import type { AppContext } from '../types';
+import { authProviders } from '../db/schema';
 import { requireAuth, requireAdmin } from '../middleware/auth';
+import { AuthProviderIdParamSchema, UpdateProviderBodySchema } from '../lib/validation';
 
 const admin = new Hono<AppContext>();
 
@@ -35,25 +37,26 @@ admin.get('/auth-providers', async (context) => {
  */
 admin.patch('/auth-providers/:id', async (context) => {
   const db = context.get('db');
-  const providerId = context.req.param('id') as AuthProviderId;
 
   // Validate provider ID
-  if (!AUTH_PROVIDER_IDS.includes(providerId)) {
+  const providerIdResult = v.safeParse(AuthProviderIdParamSchema, context.req.param('id'));
+  if (!providerIdResult.success) {
     return context.json({ error: 'Invalid provider ID' }, 400);
   }
+  const providerId = providerIdResult.output;
 
-  // Get request body
-  const body = await context.req.json<{ isActive: boolean }>();
-
-  if (typeof body.isActive !== 'boolean') {
-    return context.json({ error: 'isActive must be a boolean' }, 400);
+  // Get and validate request body
+  const bodyResult = v.safeParse(UpdateProviderBodySchema, await context.req.json());
+  if (!bodyResult.success) {
+    return context.json({ error: 'Invalid request body: isActive must be a boolean' }, 400);
   }
+  const { isActive } = bodyResult.output;
 
   // Update provider status
   const result = await db
     .update(authProviders)
     .set({
-      isActive: body.isActive,
+      isActive,
       updatedAt: new Date(),
     })
     .where(eq(authProviders.id, providerId))

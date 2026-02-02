@@ -4,21 +4,21 @@ import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core
  * Available auth provider identifiers
  * Use as discriminant for provider-specific configurations
  */
-export const AUTH_PROVIDER_IDS = ['anonymous', 'twitch'] as const;
-export type AuthProviderId = (typeof AUTH_PROVIDER_IDS)[number];
+const AUTH_PROVIDER_IDS = ['anonymous', 'twitch'] as const;
+type AuthProviderId = (typeof AUTH_PROVIDER_IDS)[number];
 
 /**
  * Auth provider types
  */
-export const AUTH_PROVIDER_TYPES = ['anonymous', 'oauth'] as const;
-export type AuthProviderType = (typeof AUTH_PROVIDER_TYPES)[number];
+const AUTH_PROVIDER_TYPES = ['anonymous', 'oauth'] as const;
+type AuthProviderType = (typeof AUTH_PROVIDER_TYPES)[number];
 
 /**
  * Auth providers table - configurable authentication methods
  * Includes both OAuth providers (twitch, google) and special methods (anonymous)
  * All provider-specific config stored in metadata JSON for flexibility
  */
-export const authProviders = sqliteTable('auth_providers', {
+const authProviders = sqliteTable('auth_providers', {
   // 'anonymous', 'twitch', etc.
   id: text('id').primaryKey().$type<AuthProviderId>(),
   // Display name: 'Anonymous', 'Twitch', 'Google'
@@ -49,13 +49,13 @@ interface BaseOAuthConfig {
  * Provider-specific configuration types
  * Discriminated union based on provider id
  */
-export type TwitchProviderConfig = BaseOAuthConfig & {
+type TwitchProviderConfig = BaseOAuthConfig & {
   provider: 'twitch';
   userInfoUrl: string;
   apiBaseUrl?: string;
 };
 
-export interface AnonymousProviderConfig {
+interface AnonymousProviderConfig {
   provider: 'anonymous';
   // No configuration needed for anonymous auth
 }
@@ -67,18 +67,18 @@ export interface AnonymousProviderConfig {
 //   DiscoveryUrl?: string; // OIDC discovery
 // };
 
-export type ProviderConfig = TwitchProviderConfig | AnonymousProviderConfig;
+type ProviderConfig = TwitchProviderConfig | AnonymousProviderConfig;
 
 /**
  * User roles enum
  */
-export const USER_ROLES = ['user', 'admin'] as const;
-export type UserRole = (typeof USER_ROLES)[number];
+const USER_ROLES = ['user', 'admin'] as const;
+type UserRole = (typeof USER_ROLES)[number];
 
 /**
  * Users table - stores all user accounts (both anonymous and linked)
  */
-export const users = sqliteTable('users', {
+const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   isAnonymous: integer('is_anonymous', { mode: 'boolean' }).notNull().default(true),
   role: text('role').notNull().default('user').$type<UserRole>(),
@@ -89,7 +89,7 @@ export const users = sqliteTable('users', {
  * OAuth clients table - registered applications that can authenticate via Passport
  * These are external services (SERVICE_1, SERVICE_2, etc.) that use "Login with Passport"
  */
-export const oauthClients = sqliteTable('oauth_clients', {
+const oauthClients = sqliteTable('oauth_clients', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   clientSecretHash: text('client_secret_hash').notNull(),
@@ -103,7 +103,7 @@ export const oauthClients = sqliteTable('oauth_clients', {
  * Sessions table - stores active user sessions with opaque tokens
  * Token is hashed before storage for security
  */
-export const sessions = sqliteTable('sessions', {
+const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
   tokenHash: text('token_hash').notNull().unique(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -115,7 +115,7 @@ export const sessions = sqliteTable('sessions', {
  * OAuth accounts table - links external OAuth providers to users
  * Supports multiple providers per user (future: add more providers)
  */
-export const oauthAccounts = sqliteTable('oauth_accounts', {
+const oauthAccounts = sqliteTable('oauth_accounts', {
   id: text('id').primaryKey(),
   // Reference to auth_providers
   providerId: text('provider_id').notNull().references(() => authProviders.id),
@@ -134,7 +134,7 @@ export const oauthAccounts = sqliteTable('oauth_accounts', {
  * Authorization codes table - temporary codes for OAuth2 authorization code flow
  * Used when external services authenticate via Passport
  */
-export const authorizationCodes = sqliteTable('authorization_codes', {
+const authorizationCodes = sqliteTable('authorization_codes', {
   id: text('id').primaryKey(),
   codeHash: text('code_hash').notNull().unique(),
   clientId: text('client_id').notNull().references(() => oauthClients.id, { onDelete: 'cascade' }),
@@ -153,7 +153,7 @@ export const authorizationCodes = sqliteTable('authorization_codes', {
 /**
  * Access tokens table - tokens issued to OAuth clients for API access
  */
-export const accessTokens = sqliteTable('access_tokens', {
+const accessTokens = sqliteTable('access_tokens', {
   id: text('id').primaryKey(),
   tokenHash: text('token_hash').notNull().unique(),
   clientId: text('client_id').notNull().references(() => oauthClients.id, { onDelete: 'cascade' }),
@@ -166,7 +166,7 @@ export const accessTokens = sqliteTable('access_tokens', {
 /**
  * Refresh tokens table - long-lived tokens for obtaining new access tokens
  */
-export const refreshTokens = sqliteTable('refresh_tokens', {
+const refreshTokens = sqliteTable('refresh_tokens', {
   id: text('id').primaryKey(),
   tokenHash: text('token_hash').notNull().unique(),
   clientId: text('client_id').notNull().references(() => oauthClients.id, { onDelete: 'cascade' }),
@@ -177,19 +177,58 @@ export const refreshTokens = sqliteTable('refresh_tokens', {
 });
 
 // Export types for use in application code
-export type AuthProvider = typeof authProviders.$inferSelect;
-export type NewAuthProvider = typeof authProviders.$inferInsert;
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-export type Session = typeof sessions.$inferSelect;
-export type NewSession = typeof sessions.$inferInsert;
-export type OAuthAccount = typeof oauthAccounts.$inferSelect;
-export type NewOAuthAccount = typeof oauthAccounts.$inferInsert;
-export type OAuthClient = typeof oauthClients.$inferSelect;
-export type NewOAuthClient = typeof oauthClients.$inferInsert;
-export type AuthorizationCode = typeof authorizationCodes.$inferSelect;
-export type NewAuthorizationCode = typeof authorizationCodes.$inferInsert;
-export type AccessToken = typeof accessTokens.$inferSelect;
-export type NewAccessToken = typeof accessTokens.$inferInsert;
-export type RefreshToken = typeof refreshTokens.$inferSelect;
-export type NewRefreshToken = typeof refreshTokens.$inferInsert;
+type AuthProvider = typeof authProviders.$inferSelect;
+type NewAuthProvider = typeof authProviders.$inferInsert;
+type User = typeof users.$inferSelect;
+type NewUser = typeof users.$inferInsert;
+type Session = typeof sessions.$inferSelect;
+type NewSession = typeof sessions.$inferInsert;
+type OAuthAccount = typeof oauthAccounts.$inferSelect;
+type NewOAuthAccount = typeof oauthAccounts.$inferInsert;
+type OAuthClient = typeof oauthClients.$inferSelect;
+type NewOAuthClient = typeof oauthClients.$inferInsert;
+type AuthorizationCode = typeof authorizationCodes.$inferSelect;
+type NewAuthorizationCode = typeof authorizationCodes.$inferInsert;
+type AccessToken = typeof accessTokens.$inferSelect;
+type NewAccessToken = typeof accessTokens.$inferInsert;
+type RefreshToken = typeof refreshTokens.$inferSelect;
+type NewRefreshToken = typeof refreshTokens.$inferInsert;
+
+export {
+  AUTH_PROVIDER_IDS,
+  AUTH_PROVIDER_TYPES,
+  USER_ROLES,
+  authProviders,
+  users,
+  oauthClients,
+  sessions,
+  oauthAccounts,
+  authorizationCodes,
+  accessTokens,
+  refreshTokens,
+};
+
+export type {
+  AuthProviderId,
+  AuthProviderType,
+  TwitchProviderConfig,
+  AnonymousProviderConfig,
+  ProviderConfig,
+  UserRole,
+  AuthProvider,
+  NewAuthProvider,
+  User,
+  NewUser,
+  Session,
+  NewSession,
+  OAuthAccount,
+  NewOAuthAccount,
+  OAuthClient,
+  NewOAuthClient,
+  AuthorizationCode,
+  NewAuthorizationCode,
+  AccessToken,
+  NewAccessToken,
+  RefreshToken,
+  NewRefreshToken,
+};

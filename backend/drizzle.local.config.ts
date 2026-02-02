@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 // Find the local wrangler D1 database file
 const dbDir = '.wrangler/state/v3/d1/miniflare-D1DatabaseObject';
-let dbPath: string;
+let dbPath = '';
 
 try {
   const files = readdirSync(dbDir);
@@ -15,7 +15,7 @@ try {
   }
 
   dbPath = join(dbDir, dbFile);
-} catch {
+} catch (error) {
   throw new Error(
     'Local D1 database not found. Please run "pnpm dev" first to create the local database.', { cause: error }
   );

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+import { navigateTo, useRoute } from '#app'
+import { computed, onMounted } from 'vue'
+import { useAuth } from '~/composables/use-auth'
 
 const { user, isLoggedIn, isAdmin, fetchSession, logout } = useAuth()
 const route = useRoute()

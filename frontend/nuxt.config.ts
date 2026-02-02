@@ -1,3 +1,4 @@
+// oxlint-disable no-undef
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-31',
@@ -43,7 +44,7 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    scan: false,
+    autoImport: false,
   },
 
   css: ['~/assets/css/main.css'],

@@ -56,10 +56,13 @@ app.route('/admin', admin);
 app.notFound((context) => context.json({ error: 'Not found' }, 404));
 
 // Error handler
-app.onError((err, context) => {
+  // oxlint-disable-next-line promise/prefer-await-to-callbacks
+  app.onError((err, context) => {
+  // oxlint-disable-next-line no-console
   console.error('Unhandled error:', err);
 
   return context.json({ error: 'Internal server error' }, 500);
 });
 
+// oxlint-disable-next-line import/no-default-export
 export default app;

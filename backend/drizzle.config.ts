@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
 
 if (process.env.CLOUDFLARE_ACCOUNT_ID === undefined) {

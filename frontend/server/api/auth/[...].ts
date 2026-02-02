@@ -1,4 +1,17 @@
-import type { H3Event } from 'h3'
+// oxlint-disable complexity
+import {
+  type H3Event,
+  appendResponseHeader,
+  defineEventHandler,
+  getHeader,
+  getQuery,
+  getRouterParam,
+  readRawBody,
+  sendRedirect,
+  setResponseStatus
+} from 'h3'
+
+import { useRuntimeConfig } from 'nitropack/runtime'
 
 /**
  * Proxy handler for passport API.
@@ -7,7 +20,8 @@ import type { H3Event } from 'h3'
  */
 export default defineEventHandler(async (event: H3Event) => {
   const config = useRuntimeConfig(event)
-  const path = getRouterParam(event, '_')
+  const path = getRouterParam(event,
+    '_')
   const {method} = event
   const query = getQuery(event)
 
@@ -35,7 +49,9 @@ export default defineEventHandler(async (event: H3Event) => {
   }
 
   // Read body for non-GET requests
-  let body: BodyInit | undefined
+  // oxlint-disable-next-line init-declarations
+  let body: BodyInit | undefined;
+
   if (method !== 'GET' && method !== 'HEAD') {
     body = await readRawBody(event) ?? undefined
   }
@@ -77,8 +93,9 @@ export default defineEventHandler(async (event: H3Event) => {
   // Forward response body
   const contentTypeResponse = response.headers.get('content-type')
   const isJson = contentTypeResponse?.includes('application/json')
+
   if (isJson === true) {
-    return response.json()
+    return response.json() as unknown
   }
 
   return response.text()

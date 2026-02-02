@@ -20,15 +20,15 @@ function createMockDb(overrides: Record<string, unknown> = {}) {
       },
     },
     insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
+      values: vi.fn().mockResolvedValue(null),
     }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockResolvedValue(null),
       }),
     }),
     delete: vi.fn().mockReturnValue({
-      where: vi.fn().mockResolvedValue(undefined),
+      where: vi.fn().mockResolvedValue(null),
     }),
     ...overrides,
   };
@@ -244,7 +244,7 @@ describe('GET /auth/session', () => {
     const json = await res.json();
 
     expect(res.status).toBe(401);
-    expect(json).toHaveProperty('error', 'Invalid session');
+    expect(json).toHaveProperty('error', 'Invalid or expired session');
   });
 
   it('should return 401 and delete session when expired', async () => {
@@ -266,7 +266,7 @@ describe('GET /auth/session', () => {
     const json = await res.json();
 
     expect(res.status).toBe(401);
-    expect(json).toHaveProperty('error', 'Session expired');
+    expect(json).toHaveProperty('error', 'Invalid or expired session');
     expect(mockDb.delete).toHaveBeenCalled();
   });
 

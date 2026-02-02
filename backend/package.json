@@ -25,7 +25,6 @@
     "@cloudflare/workers-types": "4.20260131.0",
     "@types/node": "25.2.0",
     "better-sqlite3": "12.6.2",
-    "dotenv": "17.2.3",
     "drizzle-kit": "1.0.0-beta.12-a5629fb",
     "typescript": "5.9.3",
     "vitest": "catalog:",
@@ -35,6 +34,6 @@
     "drizzle-orm": "1.0.0-beta.12-a5629fb",
     "drizzle-seed": "1.0.0-beta.12-a5629fb",
     "hono": "4.11.7",
-    "valibot": "1.2.0"
+    "valibot": "catalog:"
   }
 }

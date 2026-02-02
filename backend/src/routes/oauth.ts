@@ -1,6 +1,8 @@
+// oxlint-disable complexity
 import { Hono, type Context } from 'hono';
 import { eq } from 'drizzle-orm';
 import { getCookie } from 'hono/cookie';
+import * as v from 'valibot';
 import type { AppContext } from '../types';
 import { authorizationCodes, accessTokens, refreshTokens, type oauthClients } from '../db/schema';
 import {
@@ -67,12 +69,14 @@ async function validateClient(
   }
 
   // Parse redirect URIs and validate
-  let allowedUris: string[];
-  try {
-    allowedUris = JSON.parse(client.redirectUris);
-  } catch {
+  const redirectUrisSchema = v.array(v.string());
+  const parseResult = v.safeParse(redirectUrisSchema, JSON.parse(client.redirectUris));
+
+  if (!parseResult.success) {
     return { valid: false, error: 'server_error' };
   }
+
+  const allowedUris = parseResult.output;
 
   if (!allowedUris.includes(redirectUri)) {
     return { valid: false, error: 'invalid_redirect_uri' };
@@ -195,7 +199,7 @@ oauth.post('/token', async (context) => {
   const db = context.get('db');
 
   // Parse body (support both JSON and form-urlencoded)
-  let body: Record<string, string>;
+  let body: Record<string, string> = {};
   const contentType = context.req.header('Content-Type') ?? '';
 
   if (contentType.includes('application/json')) {
@@ -426,7 +430,7 @@ oauth.get('/userinfo', async (context) => {
 oauth.post('/revoke', async (context) => {
   const db = context.get('db');
 
-  let body: Record<string, string>;
+  let body: Record<string, string> = {};
   const contentType = context.req.header('Content-Type') ?? '';
 
   if (contentType.includes('application/json')) {

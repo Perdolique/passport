@@ -1,14 +1,16 @@
+import { useState } from '#app'
 import { $fetch } from 'ofetch'
+import { type ComputedRef, type Ref, computed } from 'vue'
 
 /**
  * User roles matching backend enum
  */
-export type UserRole = 'user' | 'admin'
+type UserRole = 'user' | 'admin'
 
 /**
  * User session data returned from auth service.
  */
-export interface User {
+interface User {
   id: string
   role: UserRole
   twitchUser?: {
@@ -22,7 +24,7 @@ export interface User {
 /**
  * Auth composable state and methods.
  */
-export interface UseAuthReturn {
+interface UseAuthReturn {
   user: Ref<User | null>
   isLoggedIn: ComputedRef<boolean>
   isAdmin: ComputedRef<boolean>
@@ -37,28 +39,28 @@ export interface UseAuthReturn {
 /**
  * Redirect to Twitch OAuth login.
  * @param redirect - Optional URL to redirect after login
- * Client-only: uses window.location
+ * Client-only: uses globalThis.location
  */
 function loginWithTwitch(redirect?: string): void {
   if (import.meta.client) {
-    const url = new URL('/api/auth/twitch', window.location.origin)
+    const url = new URL('/api/auth/twitch', globalThis.location.origin)
 
     if (redirect !== undefined && redirect !== '') {
       url.searchParams.set('redirect', redirect)
     }
 
-    window.location.href = url.toString()
+    globalThis.location.href = url.toString()
   }
 }
 
 /**
  * Link Twitch account to existing session.
  * Requires active session.
- * Client-only: uses window.location
+ * Client-only: uses globalThis.location
  */
 function linkTwitch(): void {
   if (import.meta.client) {
-    window.location.href = '/api/auth/twitch?link=true'
+    globalThis.location.href = '/api/auth/twitch?link=true'
   }
 }
 
@@ -67,7 +69,7 @@ function linkTwitch(): void {
  * Uses proxy server routes to communicate with passport.
  * SSR-compatible version with client-only checks.
  */
-export function useAuth(): UseAuthReturn {
+function useAuth(): UseAuthReturn {
   const user = useState<User | null>('auth-user', () => null)
   const isLoading = useState('auth-loading', () => false)
   const isLoggedIn = computed(() => user.value !== null)
@@ -143,3 +145,6 @@ export function useAuth(): UseAuthReturn {
     logout,
   }
 }
+
+export type { UserRole, User, UseAuthReturn };
+export { useAuth };

@@ -41,8 +41,10 @@ function createTestApp() {
   app.notFound((context) => context.json({ error: 'Not found' }, 404));
 
   // Error handler
+  // oxlint-disable-next-line promise/prefer-await-to-callbacks
   app.onError((err, context) => {
     console.error('Unhandled error:', err);
+
     return context.json({ error: 'Internal server error' }, 500);
   });
 

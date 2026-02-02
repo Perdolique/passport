@@ -5,36 +5,56 @@
     "./node_modules/eslint-config-greenpie/configs/oxlintrc.jsonc"
   ],
 
-  "rules": {
-    "no-unsafe-type-assertion": "off",
-    "no-unsafe-return": "off",
-    "no-unsafe-member-access": "off",
-    "no-unsafe-argument": "off",
-    "no-unsafe-assignment": "off",
-    "no-useless-undefined": "off",
-    "no-undef": "off",
-    "promise/prefer-await-to-callbacks": "off",
-    "no-console": "off",
-    "no-default-export": "off",
-    "init-declarations": "off",
-    "complexity": "off",
-    "max-lines": "off",
-    "unicorn/filename-case": "off",
-    "prefer-global-this": "off",
-    "group-exports": "off",
-    "exports-last": "off",
-    "no-namespace": "off",
-    "no-explicit-any": "off",
-    "import/no-unassigned-import": "off"
+  "overrides": [
+    {
+      // Backend specific configuration
+      "files": ["backend/**/*.ts"],
+
+      "rules": {
+        "import/no-namespace": ["error", {
+          "ignore": [
+            "schema",
+            "valibot"
+          ]
+        }]
+      }
+    },
+
+    {
+      // Worker environment configuration
+      "files": [
+        "frontend/server/**/*.ts",
+        "frontend/app/**/*.ts",
+        "backend/src/**/*.ts"
+      ],
+
+      "env": {
+        "worker": true
+      }
+    },
+
+    {
+    // Define Node.js environment for some files
+    "files": [
+      "drizzle.config.ts",
+      "drizzle.local.config.ts"
+    ],
+
+    "env": {
+      "node": true
+    }
   },
 
-  "overrides": [
     {
       // Test files configuration
       "files": ["**/__tests__/**/*.test.ts"],
 
       "rules": {
-        "eslint/max-lines": "off"
+        "eslint/max-lines": "off",
+        "typescript/no-explicit-any": "off",
+        "no-console": "off",
+        "unicorn/no-useless-undefined": "off",
+        "typescript/no-unsafe-type-assertion": "off" // TODO: Remove this exception after fixing existing issues
       }
     },
 
@@ -44,6 +64,22 @@
 
       "rules": {
         "unicorn/filename-case": "off"
+      }
+    },
+
+    {
+      // Files with default exports
+      "files": [
+        "**/drizzle.config.ts",
+        "**/drizzle.local.config.ts",
+        "**/vitest.config.ts",
+        "**/nuxt.config.ts",
+        "frontend/app/middleware/*.ts",
+        "frontend/server/api/**/*.ts"
+      ],
+
+      "rules": {
+        "import/no-default-export": "off"
       }
     }
   ]

@@ -11,7 +11,8 @@ const SESSION_COOKIE = 'session_token';
  * Sets c.get('userId') and c.get('userRole') if authenticated.
  * Returns 401 if not authenticated or session expired.
  */
-export const requireAuth = (): MiddlewareHandler<AppContext> => async (context, next) => {
+function requireAuth() : MiddlewareHandler<AppContext> {
+  return async (context, next) => {
     const db = context.get('db');
     const sessionToken = getCookie(context, SESSION_COOKIE);
 
@@ -42,13 +43,15 @@ export const requireAuth = (): MiddlewareHandler<AppContext> => async (context, 
 
     await next();
   };
+}
 
 /**
  * Middleware to require admin role.
  * Must be used after requireAuth middleware.
  * Returns 403 if user is not an admin.
  */
-export const requireAdmin = (): MiddlewareHandler<AppContext> => async (context, next) => {
+function requireAdmin(): MiddlewareHandler<AppContext> {
+  return async (context, next) => {
     const userRole = context.get('userRole');
 
     if (!userRole) {
@@ -61,3 +64,6 @@ export const requireAdmin = (): MiddlewareHandler<AppContext> => async (context,
 
     await next();
   };
+}
+
+export { requireAuth, requireAdmin };

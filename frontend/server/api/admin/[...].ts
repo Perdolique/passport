@@ -1,4 +1,15 @@
-import type { H3Event } from 'h3'
+import {
+  type H3Event,
+  appendResponseHeader,
+  defineEventHandler,
+  getHeader,
+  getQuery,
+  getRouterParam,
+  readRawBody,
+  setResponseStatus
+} from 'h3'
+
+import { useRuntimeConfig } from 'nitropack/runtime'
 
 /**
  * Admin API proxy endpoints
@@ -34,7 +45,9 @@ export default defineEventHandler(async (event: H3Event) => {
   }
 
   // Read body for non-GET requests
-  let body: BodyInit | undefined
+  // oxlint-disable-next-line init-declarations
+  let body: BodyInit | undefined;
+
   if (method !== 'GET' && method !== 'HEAD') {
     body = await readRawBody(event) ?? undefined
   }
@@ -61,7 +74,7 @@ export default defineEventHandler(async (event: H3Event) => {
   const contentTypeResponse = response.headers.get('content-type')
   const isJson = contentTypeResponse?.includes('application/json')
   if (isJson === true) {
-    return response.json()
+    return response.json() as unknown
   }
 
   return response.text()
