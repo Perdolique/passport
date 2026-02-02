@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createDb } from '../client';
 
-describe('createDb', () => {
+describe(createDb, () => {
   it('should create a database client with relations', () => {
     // Mock D1 database instance
     const mockD1 = {} as never;

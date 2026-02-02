@@ -1,3 +1,4 @@
+// oxlint-disable id-length
 import { defineRelations } from 'drizzle-orm';
 import * as schema from './schema';
 
@@ -5,7 +6,7 @@ import * as schema from './schema';
  * Drizzle ORM v2 relations definition
  * Using the new defineRelations() syntax
  */
-export const relations = defineRelations(schema, (r) => ({
+export const relations = defineRelations(schema, (r) => {return {
   authProviders: {
     oauthAccounts: r.many.oauthAccounts({
       from: r.authProviders.id,
@@ -111,4 +112,4 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.users.id,
     }),
   },
-}));
+}});

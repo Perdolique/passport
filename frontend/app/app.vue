@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+import { navigateTo, useRoute } from '#app'
+import { computed, onMounted } from 'vue'
+import { useAuth } from '~/composables/use-auth'
 
 const { user, isLoggedIn, isAdmin, fetchSession, logout } = useAuth()
 const route = useRoute()
@@ -10,9 +12,7 @@ onMounted(() => {
 })
 
 // Don't show header on login page or auth callback page
-const showHeader = computed(() => {
-  return route.path !== '/login' && !route.path.startsWith('/auth/')
-})
+const showHeader = computed(() => route.path !== '/login' && !route.path.startsWith('/auth/'))
 
 async function handleLogout() {
   await logout()

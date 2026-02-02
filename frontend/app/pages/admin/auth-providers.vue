@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { $fetch } from 'ofetch'
+import { definePageMeta } from '#imports'
+import { $fetch, FetchError } from 'ofetch'
+import { onMounted, ref } from 'vue'
 
 definePageMeta({
   middleware: 'admin',
@@ -15,14 +17,14 @@ interface AuthProvider {
 
 const providers = ref<AuthProvider[]>([])
 const loading = ref(true)
-const error = ref<string | null>(null)
+const errorMessage = ref<string | null>(null)
 
 /**
  * Fetch list of auth providers from backend
  */
 async function fetchProviders() {
   loading.value = true
-  error.value = null
+  errorMessage.value = null
 
   try {
     const data = await $fetch<{ providers: AuthProvider[] }>(
@@ -34,8 +36,12 @@ async function fetchProviders() {
 
     providers.value = data.providers
   }
-  catch (err: any) {
-    error.value = err.data?.error || 'Failed to load providers'
+  catch (error) {
+    if (error instanceof FetchError) {
+      errorMessage.value = error.data?.error || 'Failed to load providers'
+    } else {
+      errorMessage.value = 'Failed to load providers'
+    }
   }
   finally {
     loading.value = false
@@ -63,10 +69,15 @@ async function toggleProvider(provider: AuthProvider) {
     // Update local state
     provider.isActive = data.provider.isActive
   }
-  catch (err: any) {
+  catch (error) {
     // Revert on error
     provider.isActive = previousState
-    error.value = err.data?.error || 'Failed to update provider'
+
+    if (error instanceof FetchError) {
+      errorMessage.value = error.data?.error || 'Failed to update provider'
+    } else {
+      errorMessage.value = 'Failed to update provider'
+    }
   }
 }
 
@@ -90,9 +101,9 @@ onMounted(() => {
       Loading providers...
     </div>
 
-    <div v-else-if="error" class="error-state">
+    <div v-else-if="errorMessage" class="error-state">
       <div class="error-icon">⚠️</div>
-      <p class="error-message">{{ error }}</p>
+      <p class="error-message">{{ errorMessage }}</p>
       <button @click="fetchProviders" class="btn btn--primary">
         Retry
       </button>

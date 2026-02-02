@@ -1,4 +1,15 @@
-import type { H3Event } from 'h3'
+import {
+  type H3Event,
+  appendResponseHeader,
+  defineEventHandler,
+  getHeader,
+  getQuery,
+  getRouterParam,
+  readRawBody,
+  setResponseStatus
+} from 'h3'
+
+import { useRuntimeConfig } from 'nitropack/runtime'
 
 /**
  * Admin API proxy endpoints
@@ -7,16 +18,16 @@ import type { H3Event } from 'h3'
 export default defineEventHandler(async (event: H3Event) => {
   const config = useRuntimeConfig(event)
   const path = getRouterParam(event, '_')
-  const method = event.method
+  const {method} = event
   const query = getQuery(event)
 
   // Build target URL
-  const targetUrl = new URL(`/admin/${path || ''}`, config.authServiceUrl)
+  const targetUrl = new URL(`/admin/${path ?? ''}`, config.authServiceUrl)
 
   // Forward query params
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined) {
-      targetUrl.searchParams.set(key, String(value))
+      targetUrl.searchParams.set(key, typeof value === 'string' ? value : JSON.stringify(value))
     }
   }
 
@@ -24,17 +35,19 @@ export default defineEventHandler(async (event: H3Event) => {
   const headers: HeadersInit = {}
 
   const cookie = getHeader(event, 'cookie')
-  if (cookie) {
+  if (cookie !== null && cookie !== undefined && cookie !== '') {
     headers['cookie'] = cookie
   }
 
   const contentType = getHeader(event, 'content-type')
-  if (contentType) {
+  if (contentType !== null && contentType !== undefined && contentType !== '') {
     headers['content-type'] = contentType
   }
 
   // Read body for non-GET requests
-  let body: BodyInit | undefined
+  // oxlint-disable-next-line init-declarations
+  let body: BodyInit | undefined;
+
   if (method !== 'GET' && method !== 'HEAD') {
     body = await readRawBody(event) ?? undefined
   }
@@ -59,8 +72,9 @@ export default defineEventHandler(async (event: H3Event) => {
 
   // Forward response body
   const contentTypeResponse = response.headers.get('content-type')
-  if (contentTypeResponse?.includes('application/json')) {
-    return response.json()
+  const isJson = contentTypeResponse?.includes('application/json')
+  if (isJson === true) {
+    return response.json() as unknown
   }
 
   return response.text()

@@ -1,16 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Database } from './db/client';
-
-// Re-export provider types for convenient access
-export type {
-  AuthProviderId,
-  AuthProviderType,
-  ProviderConfig,
-  TwitchProviderConfig,
-  AnonymousProviderConfig,
-  UserRole,
-} from './db/schema';
-export { AUTH_PROVIDER_IDS, AUTH_PROVIDER_TYPES, USER_ROLES } from './db/schema';
+import type { UserRole } from './db/schema';
 
 interface Env {
   // D1 Database binding
@@ -24,9 +14,7 @@ interface Env {
   FRONTEND_URL?: string;
 }
 
-import type { UserRole } from './db/schema';
-
-export interface AppContext {
+interface AppContext {
   Bindings: Env;
 
   Variables: {
@@ -35,3 +23,17 @@ export interface AppContext {
     userRole?: UserRole;
   };
 }
+
+// Re-export provider types for convenient access
+export type {
+  AuthProviderId,
+  AuthProviderType,
+  ProviderConfig,
+  TwitchProviderConfig,
+  AnonymousProviderConfig,
+  UserRole,
+} from './db/schema';
+
+export { AUTH_PROVIDER_IDS, AUTH_PROVIDER_TYPES, USER_ROLES } from './db/schema';
+
+export type { AppContext };

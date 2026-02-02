@@ -9,7 +9,7 @@ import {
   createExpirationDate,
 } from '../crypto';
 
-describe('generateRandomString', () => {
+describe(generateRandomString, () => {
   it('should generate a string of correct length (hex encoded)', () => {
     const result = generateRandomString(16);
     // 16 bytes = 32 hex characters
@@ -28,7 +28,7 @@ describe('generateRandomString', () => {
   });
 });
 
-describe('generateId', () => {
+describe(generateId, () => {
   it('should generate a valid UUID v4 format', () => {
     const result = generateId();
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -42,7 +42,7 @@ describe('generateId', () => {
   });
 });
 
-describe('hashString', () => {
+describe(hashString, () => {
   it('should return a 64 character hex string (SHA-256)', async () => {
     const result = await hashString('test');
     expect(result).toHaveLength(64);
@@ -66,7 +66,7 @@ describe('hashString', () => {
   });
 });
 
-describe('generateCodeVerifier', () => {
+describe(generateCodeVerifier, () => {
   it('should generate a base64url encoded string', () => {
     const result = generateCodeVerifier();
     // Base64URL: only a-z, A-Z, 0-9, -, _
@@ -85,7 +85,7 @@ describe('generateCodeVerifier', () => {
   });
 });
 
-describe('generateCodeChallenge', () => {
+describe(generateCodeChallenge, () => {
   it('should generate a base64url encoded challenge', async () => {
     const verifier = generateCodeVerifier();
     const challenge = await generateCodeChallenge(verifier);
@@ -107,13 +107,13 @@ describe('generateCodeChallenge', () => {
   });
 });
 
-describe('verifyCodeChallenge', () => {
+describe(verifyCodeChallenge, () => {
   it('should return true for valid S256 challenge', async () => {
     const verifier = generateCodeVerifier();
     const challenge = await generateCodeChallenge(verifier);
 
     const result = await verifyCodeChallenge(verifier, challenge, 'S256');
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   it('should return false for invalid S256 challenge', async () => {
@@ -121,14 +121,14 @@ describe('verifyCodeChallenge', () => {
     const wrongChallenge = 'wrong-challenge-value';
 
     const result = await verifyCodeChallenge(verifier, wrongChallenge, 'S256');
-    expect(result).toBe(false);
+    expect(result).toBeFalsy();
   });
 
   it('should return true for valid plain challenge', async () => {
     const verifier = 'test-verifier-plain';
 
     const result = await verifyCodeChallenge(verifier, verifier, 'plain');
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   it('should return false for invalid plain challenge', async () => {
@@ -136,7 +136,7 @@ describe('verifyCodeChallenge', () => {
     const wrongChallenge = 'wrong-verifier';
 
     const result = await verifyCodeChallenge(verifier, wrongChallenge, 'plain');
-    expect(result).toBe(false);
+    expect(result).toBeFalsy();
   });
 
   it('should return false for unsupported method', async () => {
@@ -144,11 +144,11 @@ describe('verifyCodeChallenge', () => {
     const challenge = 'some-challenge';
 
     const result = await verifyCodeChallenge(verifier, challenge, 'unsupported');
-    expect(result).toBe(false);
+    expect(result).toBeFalsy();
   });
 });
 
-describe('createExpirationDate', () => {
+describe(createExpirationDate, () => {
   it('should return a Date object', () => {
     const result = createExpirationDate(7);
     expect(result).toBeInstanceOf(Date);

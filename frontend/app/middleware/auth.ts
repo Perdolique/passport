@@ -1,4 +1,5 @@
-import { useAuth } from '~/composables/useAuth'
+import { defineNuxtRouteMiddleware, navigateTo } from '#app'
+import { useAuth } from '~/composables/use-auth'
 
 /**
  * Auth middleware - protects routes that require authentication.

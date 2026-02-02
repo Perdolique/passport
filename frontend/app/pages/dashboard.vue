@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+  import { definePageMeta } from '#imports';
+  import { useAuth } from '~/composables/use-auth'
 
-definePageMeta({
-  middleware: 'auth',
-})
+  definePageMeta({
+    middleware: 'auth',
+  })
 
-const { user, isAdmin, isLoading, linkTwitch } = useAuth()
+  const { user, isAdmin, isLoading, linkTwitch } = useAuth()
 </script>
 
 <template>

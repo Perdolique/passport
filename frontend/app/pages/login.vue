@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+import { watchEffect } from 'vue'
+import { navigateTo } from '#app'
+import { useAuth } from '~/composables/use-auth'
 
 const { isLoggedIn, isLoading, loginWithTwitch, loginAnonymous } = useAuth()
 

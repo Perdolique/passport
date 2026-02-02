@@ -1,3 +1,4 @@
+// oxlint-disable no-undef
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-31',
@@ -32,7 +33,7 @@ export default defineNuxtConfig({
     head: {
       title: 'Passport — Authentication',
       meta: [
-        { charset: 'utf-8' },
+        { charset: 'utf8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'color-scheme', content: 'light dark' },
       ],
@@ -43,7 +44,7 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    scan: false,
+    autoImport: false,
   },
 
   css: ['~/assets/css/main.css'],

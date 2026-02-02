@@ -48,6 +48,7 @@ pnpm dev:frontend     # Start frontend dev server
 
 # Workspace
 pnpm test:typecheck   # Run TypeScript type checking for all packages
+pnpm lint             # Run oxlint code quality checks
 
 # Database (backend)
 pnpm db:generate      # Generate migrations
@@ -59,8 +60,9 @@ pnpm db:studio        # Open Drizzle Studio
 ## Workflow
 
 1. Before performing any task or even any small action, always check for relevant skills.
-2. After any code changes, always run `pnpm test:typecheck` to verify there are no type errors in any package.
-3. After backend code changes, always run `pnpm test:unit:ci` to verify all unit tests pass.
-4. After changes to database schema (`backend/src/db/schema.ts`), run `pnpm db:generate` to generate migrations.
-5. After completing changes, update relevant README files (`README.md`, `backend/README.md`, `frontend/README.md`) and AGENTS files if any relevant information was added or modified.
-6. If changes affect project-specific skills (api, database, testing), review and update skill configurations to keep them aligned with the current implementation.
+2. After backend code changes, always run `pnpm test:unit:ci` to verify all unit tests pass.
+3. After any code changes, always run `pnpm test:typecheck` to verify there are no type errors in any package
+4. After any code changes, always run `pnpm lint` to check code quality. Do not pass any arguments to the lint command and do not specify any files or directories.
+5. After changes to database schema (`backend/src/db/schema.ts`), run `pnpm db:generate` to generate migrations.
+6. After completing changes, update relevant README files (`README.md`, `backend/README.md`, `frontend/README.md`) and AGENTS files if any relevant information was added or modified.
+7. If changes affect project-specific skills (api, database, testing), review and update skill configurations to keep them aligned with the current implementation.

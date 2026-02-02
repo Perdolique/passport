@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { buildTwitchAuthUrl, exchangeTwitchCode, getTwitchUser, refreshTwitchToken } from '../twitch';
 
-describe('buildTwitchAuthUrl', () => {
+describe(buildTwitchAuthUrl, () => {
   const baseParams = {
     clientId: 'test-client-id',
     redirectUri: 'https://example.com/callback',
@@ -96,7 +96,7 @@ describe('buildTwitchAuthUrl', () => {
   });
 });
 
-describe('exchangeTwitchCode', () => {
+describe(exchangeTwitchCode, () => {
   const mockFetch = vi.fn();
 
   beforeEach(() => {
@@ -118,7 +118,7 @@ describe('exchangeTwitchCode', () => {
   const validTokenResponse = {
     access_token: 'test-access-token',
     refresh_token: 'test-refresh-token',
-    expires_in: 14400,
+    expires_in: 14_400,
     token_type: 'bearer',
     scope: ['user:read:email'],
   };
@@ -126,7 +126,7 @@ describe('exchangeTwitchCode', () => {
   it('should exchange code for tokens successfully', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validTokenResponse),
+      json: () => validTokenResponse,
     });
 
     const result = await exchangeTwitchCode(baseParams);
@@ -145,13 +145,13 @@ describe('exchangeTwitchCode', () => {
   it('should include all required parameters in request body', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validTokenResponse),
+      json: () => validTokenResponse,
     });
 
     await exchangeTwitchCode(baseParams);
 
-    const [, options] = mockFetch.mock.calls[0];
-    const body = new URLSearchParams(options.body);
+    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    const body = new URLSearchParams(options.body as string);
 
     expect(body.get('client_id')).toBe('test-client-id');
     expect(body.get('client_secret')).toBe('test-client-secret');
@@ -164,7 +164,7 @@ describe('exchangeTwitchCode', () => {
   it('should throw error when API returns non-ok response', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      text: () => Promise.resolve('Invalid authorization code'),
+      text: () => 'Invalid authorization code',
     });
 
     await expect(exchangeTwitchCode(baseParams)).rejects.toThrow(
@@ -175,14 +175,14 @@ describe('exchangeTwitchCode', () => {
   it('should throw error when response schema is invalid', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ invalid: 'response' }),
+      json: () => { return { invalid: 'response' }; },
     });
 
     await expect(exchangeTwitchCode(baseParams)).rejects.toThrow();
   });
 });
 
-describe('getTwitchUser', () => {
+describe(getTwitchUser, () => {
   const mockFetch = vi.fn();
 
   beforeEach(() => {
@@ -213,7 +213,7 @@ describe('getTwitchUser', () => {
   it('should fetch user info successfully', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validUserResponse),
+      json: () => validUserResponse,
     });
 
     const result = await getTwitchUser(baseParams);
@@ -224,7 +224,7 @@ describe('getTwitchUser', () => {
   it('should include correct headers in request', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validUserResponse),
+      json: () => validUserResponse,
     });
 
     await getTwitchUser(baseParams);
@@ -243,7 +243,7 @@ describe('getTwitchUser', () => {
   it('should throw error when API returns non-ok response', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      text: () => Promise.resolve('Unauthorized'),
+      text: () => 'Unauthorized',
     });
 
     await expect(getTwitchUser(baseParams)).rejects.toThrow(
@@ -254,7 +254,7 @@ describe('getTwitchUser', () => {
   it('should throw error when no user found in response', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ data: [] }),
+      json: () => { return { data: [] }; },
     });
 
     await expect(getTwitchUser(baseParams)).rejects.toThrow('No Twitch user found');
@@ -274,7 +274,7 @@ describe('getTwitchUser', () => {
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(userWithoutEmail),
+      json: () => userWithoutEmail,
     });
 
     const result = await getTwitchUser(baseParams);
@@ -284,7 +284,7 @@ describe('getTwitchUser', () => {
   });
 });
 
-describe('refreshTwitchToken', () => {
+describe(refreshTwitchToken, () => {
   const mockFetch = vi.fn();
 
   beforeEach(() => {
@@ -304,7 +304,7 @@ describe('refreshTwitchToken', () => {
   const validTokenResponse = {
     access_token: 'new-access-token',
     refresh_token: 'new-refresh-token',
-    expires_in: 14400,
+    expires_in: 14_400,
     token_type: 'bearer',
     scope: ['user:read:email'],
   };
@@ -312,7 +312,7 @@ describe('refreshTwitchToken', () => {
   it('should refresh token successfully', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validTokenResponse),
+      json: () => validTokenResponse,
     });
 
     const result = await refreshTwitchToken(baseParams);
@@ -323,13 +323,13 @@ describe('refreshTwitchToken', () => {
   it('should include correct parameters in request body', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(validTokenResponse),
+      json: () => validTokenResponse,
     });
 
     await refreshTwitchToken(baseParams);
 
-    const [, options] = mockFetch.mock.calls[0];
-    const body = new URLSearchParams(options.body);
+    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    const body = new URLSearchParams(options.body as string);
 
     expect(body.get('client_id')).toBe('test-client-id');
     expect(body.get('client_secret')).toBe('test-client-secret');
@@ -340,7 +340,7 @@ describe('refreshTwitchToken', () => {
   it('should throw error when API returns non-ok response', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      text: () => Promise.resolve('Invalid refresh token'),
+      text: () => 'Invalid refresh token',
     });
 
     await expect(refreshTwitchToken(baseParams)).rejects.toThrow(
@@ -351,7 +351,7 @@ describe('refreshTwitchToken', () => {
   it('should throw error when response schema is invalid', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ incomplete: 'response' }),
+      json: () => { return { incomplete: 'response' }; },
     });
 
     await expect(refreshTwitchToken(baseParams)).rejects.toThrow();

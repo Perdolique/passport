@@ -27,15 +27,15 @@ function createMockDb(overrides: Record<string, unknown> = {}) {
       },
     },
     insert: vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined),
+      values: vi.fn().mockResolvedValue(null),
     }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(undefined),
+        where: vi.fn().mockResolvedValue(null),
       }),
     }),
     delete: vi.fn().mockReturnValue({
-      where: vi.fn().mockResolvedValue(undefined),
+      where: vi.fn().mockResolvedValue(null),
     }),
     ...overrides,
   };
@@ -48,8 +48,8 @@ function createTestApp(mockDb: ReturnType<typeof createMockDb>) {
   const app = new Hono<AppContext>();
 
   // Mock database middleware
-  app.use('*', async (c, next) => {
-    c.set('db', mockDb as never);
+  app.use('*', async (context, next) => {
+    context.set('db', mockDb as never);
     await next();
   });
 
@@ -165,7 +165,7 @@ describe('GET /oauth/authorize', () => {
     mockDb.query.sessions.findFirst = vi.fn().mockResolvedValue({
       id: 'session-1',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() + 86400000),
+      expiresAt: new Date(Date.now() + 86_400_000),
       user: { id: 'user-1', isAnonymous: false },
     });
 
@@ -330,7 +330,8 @@ describe('POST /oauth/token - authorization_code', () => {
       clientId: 'test-client',
       redirectUri: 'https://example.com',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() - 1000), // Expired
+      // Expired
+      expiresAt: new Date(Date.now() - 1000),
     });
 
     const app = createTestApp(mockDb);
@@ -364,8 +365,9 @@ describe('POST /oauth/token - authorization_code', () => {
       clientId: 'test-client',
       redirectUri: 'https://example.com',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() + 60000),
-      codeChallenge: 'some-challenge', // PKCE was used
+      expiresAt: new Date(Date.now() + 60_000),
+      // PKCE was used
+      codeChallenge: 'some-challenge',
       codeChallengeMethod: 'S256',
     });
 
@@ -401,8 +403,9 @@ describe('POST /oauth/token - authorization_code', () => {
       redirectUri: 'https://example.com',
       userId: 'user-1',
       scope: 'openid profile',
-      expiresAt: new Date(Date.now() + 60000),
-      codeChallenge: null, // No PKCE
+      expiresAt: new Date(Date.now() + 60_000),
+      // No PKCE
+      codeChallenge: null,
       user: { id: 'user-1' },
     });
 
@@ -426,7 +429,8 @@ describe('POST /oauth/token - authorization_code', () => {
     expect(json).toHaveProperty('token_type', 'Bearer');
     expect(json).toHaveProperty('expires_in');
     expect(json).toHaveProperty('scope', 'openid profile');
-    expect(mockDb.delete).toHaveBeenCalled(); // Code should be deleted after use
+    // Code should be deleted after use
+    expect(mockDb.delete).toHaveBeenCalled();
   });
 
   it('should accept JSON body', async () => {
@@ -442,7 +446,7 @@ describe('POST /oauth/token - authorization_code', () => {
       redirectUri: 'https://example.com',
       userId: 'user-1',
       scope: null,
-      expiresAt: new Date(Date.now() + 60000),
+      expiresAt: new Date(Date.now() + 60_000),
       codeChallenge: null,
       user: { id: 'user-1' },
     });
@@ -526,9 +530,10 @@ describe('POST /oauth/token - refresh_token', () => {
     });
     mockDb.query.refreshTokens.findFirst = vi.fn().mockResolvedValue({
       id: 'token-1',
-      clientId: 'other-client', // Different client
+      // Different client
+      clientId: 'other-client',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() + 86400000),
+      expiresAt: new Date(Date.now() + 86_400_000),
     });
 
     const app = createTestApp(mockDb);
@@ -559,7 +564,8 @@ describe('POST /oauth/token - refresh_token', () => {
       id: 'token-1',
       clientId: 'test-client',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() - 1000), // Expired
+      // Expired
+      expiresAt: new Date(Date.now() - 1000),
     });
 
     const app = createTestApp(mockDb);
@@ -592,7 +598,7 @@ describe('POST /oauth/token - refresh_token', () => {
       clientId: 'test-client',
       userId: 'user-1',
       scope: 'openid',
-      expiresAt: new Date(Date.now() + 86400000),
+      expiresAt: new Date(Date.now() + 86_400_000),
     });
 
     const app = createTestApp(mockDb);
@@ -662,7 +668,8 @@ describe('GET /oauth/userinfo', () => {
     mockDb.query.accessTokens.findFirst = vi.fn().mockResolvedValue({
       id: 'token-1',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() - 1000), // Expired
+      // Expired
+      expiresAt: new Date(Date.now() - 1000),
       user: { id: 'user-1' },
     });
 
@@ -683,7 +690,7 @@ describe('GET /oauth/userinfo', () => {
     mockDb.query.accessTokens.findFirst = vi.fn().mockResolvedValue({
       id: 'token-1',
       userId: 'user-1',
-      expiresAt: new Date(Date.now() + 3600000),
+      expiresAt: new Date(Date.now() + 3_600_000),
       user: {
         id: 'user-1',
         isAnonymous: false,

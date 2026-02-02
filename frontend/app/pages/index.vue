@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth'
+  import { useRuntimeConfig } from '#app';
+  import { useAuth } from '~/composables/use-auth'
 
-const { isLoggedIn } = useAuth()
-const config = useRuntimeConfig()
+  const { isLoggedIn } = useAuth()
+  const config = useRuntimeConfig()
 </script>
 
 <template>

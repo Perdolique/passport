@@ -15,7 +15,7 @@ const TwitchTokenResponseSchema = v.object({
   scope: v.array(v.string()),
 });
 
-export type TwitchTokenResponse = v.InferOutput<typeof TwitchTokenResponseSchema>;
+type TwitchTokenResponse = v.InferOutput<typeof TwitchTokenResponseSchema>;
 
 /**
  * Schema for Twitch user data
@@ -28,7 +28,7 @@ const TwitchUserSchema = v.object({
   profile_image_url: v.string(),
 });
 
-export type TwitchUser = v.InferOutput<typeof TwitchUserSchema>;
+type TwitchUser = v.InferOutput<typeof TwitchUserSchema>;
 
 /**
  * Schema for Twitch users API response
@@ -40,7 +40,7 @@ const TwitchUsersResponseSchema = v.object({
 /**
  * Build the Twitch OAuth authorization URL
  */
-export function buildTwitchAuthUrl(params: {
+function buildTwitchAuthUrl(params: {
   clientId: string;
   redirectUri: string;
   state: string;
@@ -64,7 +64,7 @@ export function buildTwitchAuthUrl(params: {
 /**
  * Exchange authorization code for tokens
  */
-export async function exchangeTwitchCode(params: {
+async function exchangeTwitchCode(params: {
   code: string;
   clientId: string;
   clientSecret: string;
@@ -103,7 +103,7 @@ export async function exchangeTwitchCode(params: {
 /**
  * Get Twitch user info using access token
  */
-export async function getTwitchUser(params: {
+async function getTwitchUser(params: {
   accessToken: string;
   clientId: string;
 }): Promise<TwitchUser> {
@@ -134,7 +134,7 @@ export async function getTwitchUser(params: {
 /**
  * Refresh Twitch access token
  */
-export async function refreshTwitchToken(params: {
+async function refreshTwitchToken(params: {
   refreshToken: string;
   clientId: string;
   clientSecret: string;
@@ -165,3 +165,6 @@ export async function refreshTwitchToken(params: {
 
   return v.parse(TwitchTokenResponseSchema, data);
 }
+
+export type { TwitchTokenResponse, TwitchUser };
+export { buildTwitchAuthUrl, exchangeTwitchCode, getTwitchUser, refreshTwitchToken };
