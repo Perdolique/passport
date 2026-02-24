@@ -1,0 +1,26 @@
+{
+  "name": "passport",
+  "version": "0.0.1",
+  "description": "Passport authentication service",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "lint": "oxlint --quiet --type-aware --report-unused-disable-directives-severity error",
+    "test:typecheck": "pnpm -r test:typecheck",
+    "test:unit:ci": "pnpm -r test:unit:ci",
+    "test:unit": "pnpm -r test:unit",
+    "update:all": "taze --recursive --interactive --include-locked",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "Pier Dolique (Perdoloque)",
+  "license": "Unlicense",
+  "packageManager": "pnpm@10.30.2",
+  "devDependencies": {
+    "eslint-config-greenpie": "16.0.0-3",
+    "husky": "9.1.7",
+    "oxlint": "1.50.0",
+    "oxlint-tsgolint": "0.14.2",
+    "taze": "19.9.2"
+  }
+}

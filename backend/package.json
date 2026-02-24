@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "version": "0.0.1",
+  "description": "Backend for Passport authentication service",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "generate:types": "wrangler types",
+    "test:typecheck": "tsc",
+    "test:unit": "vitest",
+    "test:unit:ci": "vitest run",
+    "db": "drizzle-kit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "keywords": [],
+  "author": "Pier Dolique (Perdoloque)",
+  "license": "Unlicense",
+  "devDependencies": {
+    "@types/node": "25.3.0",
+    "drizzle-kit": "1.0.0-beta.15-859cf75",
+    "typescript": "5.9.3",
+    "vitest": "catalog:",
+    "wrangler": "4.68.0"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "1.0.2",
+    "drizzle-orm": "1.0.0-beta.15-859cf75",
+    "drizzle-seed": "1.0.0-beta.15-859cf75",
+    "hono": "4.12.2",
+    "nanoid": "5.1.6",
+    "valibot": "catalog:"
+  }
+}
