@@ -1,0 +1,81 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "extends": [
+    "./node_modules/eslint-config-greenpie/configs/oxlintrc.jsonc"
+  ],
+
+  "ignorePatterns": [
+    "worker-configuration.d.ts"
+  ],
+
+  "overrides": [
+    {
+      // Backend specific configuration
+      "files": ["backend/**/*.ts"],
+
+      "rules": {
+        "import/no-relative-parent-imports": "off",
+
+        "import/no-namespace": ["error", {
+          "ignore": [
+            "schema",
+            "valibot"
+          ]
+        }]
+      }
+    },
+
+    {
+      // Worker environment configuration
+      "files": [
+        "backend/src/**/*.ts"
+      ],
+
+      "env": {
+        "worker": true
+      }
+    },
+
+    {
+      // Define Node.js environment for some files
+      "files": [
+        "**/drizzle.config.ts"
+      ],
+
+      "env": {
+        "node": true
+      }
+    },
+
+    {
+      // Files with default exports
+      "files": [
+        "backend/src/index.ts",
+        "backend/vitest.config.ts"
+      ],
+
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    },
+
+    {
+      // Test files configuration
+      "files": ["**/__tests__/**/*.test.ts"],
+
+      "rules": {
+        "eslint/max-lines": "off"
+      }
+    },
+
+    {
+      // Vue files configuration
+      "files": ["**/*.vue"],
+
+      "rules": {
+        // TODO
+      }
+    }
+  ]
+}
