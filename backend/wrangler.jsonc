@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "passport",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-23",
+
+  "vars": {
+    // "TWITCH_REDIRECT_URI": "http://localhost:8787/auth/twitch/callback",
+    // "FRONTEND_URL": "http://localhost:1487",
+    // "CORS_ALLOWED_ORIGINS": "",
+    // "SECURITY_STRICT_OAUTH21": "false"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}
