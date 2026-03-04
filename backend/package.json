@@ -29,7 +29,7 @@
     "@neondatabase/serverless": "1.0.2",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
     "drizzle-seed": "1.0.0-beta.15-859cf75",
-    "hono": "4.12.2",
+    "hono": "4.12.4",
     "nanoid": "5.1.6",
     "valibot": "catalog:"
   }
